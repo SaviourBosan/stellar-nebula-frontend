@@ -1,3 +1,5 @@
+import type { StellarNetwork } from './stellar'
+
 export type Environment = 'development' | 'staging' | 'production'
 
 export interface EnvConfig {
@@ -7,7 +9,7 @@ export interface EnvConfig {
   APP_VERSION: string
 
   // Stellar Network
-  STELLAR_NETWORK: 'testnet' | 'mainnet' | 'futurenet'
+  STELLAR_NETWORK: StellarNetwork
   STELLAR_RPC_URL: string
   STELLAR_HORIZON_URL: string
   STELLAR_PASSPHRASE: string
@@ -35,9 +37,7 @@ const REQUIRED_VARS = [
 ] as const
 
 function validateEnv(): void {
-  const missing = REQUIRED_VARS.filter(
-    (key) => !import.meta.env[key]
-  )
+  const missing = REQUIRED_VARS.filter((key) => !import.meta.env[key])
 
   if (missing.length > 0) {
     throw new Error(
@@ -56,7 +56,8 @@ function getEnv(): EnvConfig {
     APP_NAME: import.meta.env.VITE_APP_NAME ?? 'Stellar Nebula',
     APP_VERSION: import.meta.env.VITE_APP_VERSION ?? '0.0.0',
 
-    STELLAR_NETWORK: (import.meta.env.VITE_STELLAR_NETWORK ?? 'testnet') as EnvConfig['STELLAR_NETWORK'],
+    STELLAR_NETWORK: (import.meta.env.VITE_STELLAR_NETWORK ??
+      'testnet') as EnvConfig['STELLAR_NETWORK'],
     STELLAR_RPC_URL: import.meta.env.VITE_STELLAR_RPC_URL,
     STELLAR_HORIZON_URL: import.meta.env.VITE_STELLAR_HORIZON_URL,
     STELLAR_PASSPHRASE: import.meta.env.VITE_STELLAR_PASSPHRASE,
