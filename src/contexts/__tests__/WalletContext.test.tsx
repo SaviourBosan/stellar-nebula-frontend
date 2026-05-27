@@ -1,0 +1,109 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, act } from '../../test/utils'
+import userEvent from '@testing-library/user-event'
+import { WalletProvider, useWallet } from '../WalletContext'
+
+// Mock wallet services
+vi.mock('@services/wallets', () => ({
+  isFreighterInstalled: vi.fn().mockResolvedValue(true),
+  connectFreighter: vi.fn().mockResolvedValue('GFREIGHTER123'),
+  getFreighterNetwork: vi.fn().mockResolvedValue('testnet'),
+  isAlbedoAvailable: vi.fn().mockReturnValue(true),
+  connectAlbedo: vi.fn().mockResolvedValue('GALBEDO123'),
+  signTransactionWithFreighter: vi.fn().mockResolvedValue('SIGNED_XDR'),
+  signTransactionWithAlbedo: vi.fn().mockResolvedValue('SIGNED_ALBEDO_XDR'),
+}))
+
+function TestConsumer() {
+  const { walletState, connect, disconnect, isLoading, error } = useWallet()
+  return (
+    <div>
+      <span data-testid="connected">{String(walletState.isConnected)}</span>
+      <span data-testid="pubkey">{walletState.publicKey ?? 'none'}</span>
+      <span data-testid="loading">{String(isLoading)}</span>
+      <span data-testid="error">{error ?? 'none'}</span>
+      <button onClick={() => connect('freighter')}>Connect Freighter</button>
+      <button onClick={() => connect('albedo')}>Connect Albedo</button>
+      <button onClick={disconnect}>Disconnect</button>
+    </div>
+  )
+}
+
+function renderWithProvider() {
+  return render(
+    <WalletProvider>
+      <TestConsumer />
+    </WalletProvider>,
+  )
+}
+
+describe('WalletProvider', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
+  it('starts in a disconnected state', () => {
+    renderWithProvider()
+    expect(screen.getByTestId('connected').textContent).toBe('false')
+    expect(screen.getByTestId('pubkey').textContent).toBe('none')
+  })
+
+  it('connects via Freighter and updates state', async () => {
+    renderWithProvider()
+    await act(async () => {
+      await userEvent.click(screen.getByText('Connect Freighter'))
+    })
+    expect(screen.getByTestId('connected').textContent).toBe('true')
+    expect(screen.getByTestId('pubkey').textContent).toBe('GFREIGHTER123')
+  })
+
+  it('connects via Albedo and updates state', async () => {
+    renderWithProvider()
+    await act(async () => {
+      await userEvent.click(screen.getByText('Connect Albedo'))
+    })
+    expect(screen.getByTestId('connected').textContent).toBe('true')
+    expect(screen.getByTestId('pubkey').textContent).toBe('GALBEDO123')
+  })
+
+  it('disconnects and resets state', async () => {
+    renderWithProvider()
+    await act(async () => {
+      await userEvent.click(screen.getByText('Connect Freighter'))
+    })
+    await act(async () => {
+      await userEvent.click(screen.getByText('Disconnect'))
+    })
+    expect(screen.getByTestId('connected').textContent).toBe('false')
+    expect(screen.getByTestId('pubkey').textContent).toBe('none')
+  })
+
+  it('throws when useWallet is used outside the provider', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    expect(() => render(<TestConsumer />)).toThrow('useWallet must be used inside <WalletProvider>')
+    consoleError.mockRestore()
+  })
+
+  it('persists connection to localStorage', async () => {
+    renderWithProvider()
+    await act(async () => {
+      await userEvent.click(screen.getByText('Connect Freighter'))
+    })
+    const stored = localStorage.getItem('stellar-nebula:wallet')
+    expect(stored).not.toBeNull()
+    const parsed = JSON.parse(stored!)
+    expect(parsed.publicKey).toBe('GFREIGHTER123')
+  })
+
+  it('clears localStorage on disconnect', async () => {
+    renderWithProvider()
+    await act(async () => {
+      await userEvent.click(screen.getByText('Connect Freighter'))
+    })
+    await act(async () => {
+      await userEvent.click(screen.getByText('Disconnect'))
+    })
+    expect(localStorage.getItem('stellar-nebula:wallet')).toBeNull()
+  })
+})
