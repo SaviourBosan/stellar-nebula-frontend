@@ -85,8 +85,8 @@ function AppInner() {
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
-    <>
-      <div style={{ width: '100vw', height: '100vh' }}>
+    <main className="min-h-screen bg-nebula-radial text-slate-100 dark">
+      <div className="h-screen w-screen">
         <NebulaCanvas showFps={isDev} />
       </div>
 
@@ -122,7 +122,7 @@ function AppInner() {
           },
         }}
       />
-    </>
+    </main>
   )
 }
 
