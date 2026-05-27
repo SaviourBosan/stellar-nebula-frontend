@@ -3,10 +3,12 @@ import { useEffect, useRef, useState } from 'react'
 export function FpsCounter() {
   const [fps, setFps] = useState(0)
   const frameCountRef = useRef(0)
-  const lastTimeRef = useRef(performance.now())
+  const lastTimeRef = useRef(0)
   const rafRef = useRef<number>(0)
 
   useEffect(() => {
+    lastTimeRef.current = performance.now()
+
     const tick = () => {
       frameCountRef.current++
       const now = performance.now()
