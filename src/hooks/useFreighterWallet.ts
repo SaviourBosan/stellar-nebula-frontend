@@ -5,7 +5,7 @@ import {
   getFreighterNetwork,
   signTransactionWithFreighter,
 } from '@services/wallets'
-import type { WalletState, PublicKey, XDR } from '@types'
+import type { WalletState, PublicKey, XDR } from '@/types'
 
 const INITIAL_STATE: WalletState = {
   isConnected: false,

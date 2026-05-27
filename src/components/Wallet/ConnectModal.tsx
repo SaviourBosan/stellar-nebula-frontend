@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useWallet } from '@/contexts/WalletContext'
 import { Spinner } from '@components/UI/Spinner'
-import type { WalletType } from '@types'
+import type { WalletType } from '@/types'
 
 // ─── Wallet option descriptors ────────────────────────────────────────────────
 

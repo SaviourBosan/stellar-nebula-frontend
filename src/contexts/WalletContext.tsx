@@ -16,7 +16,7 @@ import {
   signTransactionWithFreighter,
   signTransactionWithAlbedo,
 } from '@services/wallets'
-import type { WalletState, WalletType, XDR, StellarNetwork } from '@types'
+import type { WalletState, WalletType, XDR, StellarNetwork } from '@/types'
 
 // ─── Storage key ─────────────────────────────────────────────────────────────
 
