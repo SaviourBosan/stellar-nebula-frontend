@@ -4,3 +4,9 @@ export {
   getFreighterNetwork,
   signTransactionWithFreighter,
 } from './freighter'
+
+export {
+  isAlbedoAvailable,
+  connectAlbedo,
+  signTransactionWithAlbedo,
+} from './albedo'

@@ -1,15 +1,36 @@
+import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { NebulaCanvas } from './components/Canvas'
 import ErrorBoundary from './components/ErrorBoundary'
+import { WalletProvider } from './contexts/WalletContext'
+import { WalletDisplay } from './components/Wallet'
+import { ConnectModal } from './components/Wallet'
 import { isDev } from './config'
 import './App.css'
 
-function App() {
+function AppInner() {
+  const [modalOpen, setModalOpen] = useState(false)
+
   return (
-    <ErrorBoundary>
+    <>
       <div style={{ width: '100vw', height: '100vh' }}>
         <NebulaCanvas showFps={isDev} />
       </div>
+
+      {/* Wallet HUD — top-right overlay */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 16,
+          right: 16,
+          zIndex: 10,
+        }}
+      >
+        <WalletDisplay onOpenConnectModal={() => setModalOpen(true)} />
+      </div>
+
+      <ConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+
       <Toaster
         position="bottom-right"
         toastOptions={{
@@ -27,6 +48,16 @@ function App() {
           },
         }}
       />
+    </>
+  )
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <WalletProvider>
+        <AppInner />
+      </WalletProvider>
     </ErrorBoundary>
   )
 }
