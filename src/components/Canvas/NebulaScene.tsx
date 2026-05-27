@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Stars } from '@react-three/drei'
 import type { Group, Mesh } from 'three'
+import { Starfield } from '../Nebula'
 
 function NebulaSphere() {
   const meshRef = useRef<Mesh>(null)
@@ -60,13 +60,18 @@ function ScanPoints() {
   )
 }
 
-export function NebulaScene() {
+interface NebulaSceneProps {
+  starfieldDensity: number
+  performanceMode?: boolean
+}
+
+export function NebulaScene({ starfieldDensity, performanceMode = false }: NebulaSceneProps) {
   return (
     <>
       <ambientLight intensity={0.3} />
       <pointLight position={[10, 10, 10]} intensity={1.5} color="#a78bfa" />
       <pointLight position={[-10, -5, -10]} intensity={0.8} color="#06b6d4" />
-      <Stars radius={120} depth={60} count={8000} factor={4} fade speed={1} />
+      <Starfield density={starfieldDensity} performanceMode={performanceMode} />
       <ScanPoints />
       <NebulaSphere />
     </>

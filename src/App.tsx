@@ -13,9 +13,11 @@ function VisualSettingsPanel() {
   const bloomEnabled = useGraphicsStore((state) => state.bloomEnabled)
   const bloomIntensity = useGraphicsStore((state) => state.bloomIntensity)
   const performanceMode = useGraphicsStore((state) => state.performanceMode)
+  const starfieldDensity = useGraphicsStore((state) => state.starfieldDensity)
   const setBloomEnabled = useGraphicsStore((state) => state.setBloomEnabled)
   const setBloomIntensity = useGraphicsStore((state) => state.setBloomIntensity)
   const setPerformanceMode = useGraphicsStore((state) => state.setPerformanceMode)
+  const setStarfieldDensity = useGraphicsStore((state) => state.setStarfieldDensity)
 
   return (
     <div style={panelStyle}>
@@ -60,6 +62,21 @@ function VisualSettingsPanel() {
       >
         Performance mode {performanceMode ? 'on' : 'off'}
       </button>
+
+      <label style={{ ...sliderRowStyle, marginBottom: 0, marginTop: 10 }}>
+        <span style={sliderLabelStyle}>Star density</span>
+        <input
+          type="range"
+          min="0.4"
+          max="1.5"
+          step="0.01"
+          value={starfieldDensity}
+          onChange={(event) => setStarfieldDensity(Number(event.target.value))}
+          style={sliderStyle}
+          aria-label="Starfield density"
+        />
+        <span style={sliderValueStyle}>{starfieldDensity.toFixed(2)}</span>
+      </label>
     </div>
   )
 }

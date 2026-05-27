@@ -14,6 +14,7 @@ export function NebulaCanvas({ showFps = false }: NebulaCanvasProps) {
   const bloomEnabled = useGraphicsStore((state) => state.bloomEnabled)
   const bloomIntensity = useGraphicsStore((state) => state.bloomIntensity)
   const performanceMode = useGraphicsStore((state) => state.performanceMode)
+  const starfieldDensity = useGraphicsStore((state) => state.starfieldDensity)
   const deviceHints = useMemo(() => {
     if (typeof window === 'undefined') {
       return {
@@ -44,7 +45,7 @@ export function NebulaCanvas({ showFps = false }: NebulaCanvasProps) {
         dpr={[1, deviceHints.isMobile ? 1.5 : 2]}
       >
         <Suspense fallback={null}>
-          <NebulaScene />
+          <NebulaScene starfieldDensity={starfieldDensity} performanceMode={performanceMode} />
           <BloomEffect
             enabled={bloomEnabled}
             intensity={bloomIntensity}
