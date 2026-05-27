@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Horizon } from '@stellar/stellar-sdk'
+import type { Horizon } from '@stellar/stellar-sdk'
 import { createHorizonServer } from '@config/stellar'
 import type { StellarNetworkConfig } from '@config/stellar'
 
@@ -34,9 +34,7 @@ export const formatBalance = (
     }
   }
 
-  // @ts-expect-error Types for different balance lines are complex, but they will have asset_code and asset_issuer
   const code = 'asset_code' in balance ? balance.asset_code : 'LP'
-  // @ts-expect-error
   const issuer = 'asset_issuer' in balance ? balance.asset_issuer : undefined
 
   return {
@@ -81,8 +79,13 @@ export function useAccountBalances(
       formatted.sort((a, b) => (a.isNative === b.isNative ? 0 : a.isNative ? -1 : 1))
       
       setBalances(formatted)
-    } catch (err: any) {
-      if (err?.response?.status === 404) {
+    } catch (err: unknown) {
+      const status =
+        typeof err === 'object' && err !== null && 'response' in err
+          ? (err as { response?: { status?: number } }).response?.status
+          : undefined
+
+      if (status === 404) {
         setIsUnfunded(true)
         setBalances([])
       } else {
@@ -94,7 +97,11 @@ export function useAccountBalances(
   }, [accountId, config])
 
   useEffect(() => {
-    fetchBalances()
+    const loadBalances = async () => {
+      await fetchBalances()
+    }
+
+    void loadBalances()
 
     if (!accountId) return
 

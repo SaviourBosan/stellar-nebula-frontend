@@ -10,7 +10,7 @@
  * Reference: https://www.freighter.app/docs/guide/introduction.html
  */
 
-import type { StellarNetwork, PublicKey, XDR } from '@types'
+import type { StellarNetwork, PublicKey, XDR } from '@/types'
 
 // ─── Freighter browser-extension interface (subset we use) ───────────────────
 

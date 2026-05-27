@@ -19,6 +19,15 @@ export {
 } from './resourceStore'
 
 export {
+  initialGraphicsState,
+  graphicsStoreStorageKey,
+  useGraphicsStore,
+  type GraphicsActions,
+  type GraphicsState,
+  type GraphicsStore,
+} from './graphicsStore'
+
+export {
   initialUserState,
   userStoreStorageKey,
   useUserStore,

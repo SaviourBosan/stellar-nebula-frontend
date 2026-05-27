@@ -9,7 +9,7 @@
  */
 
 import albedo from '@albedo-link/intent'
-import type { PublicKey, XDR, StellarNetwork } from '@types'
+import type { PublicKey, XDR, StellarNetwork } from '@/types'
 
 // ─── Connection ───────────────────────────────────────────────────────────────
 
