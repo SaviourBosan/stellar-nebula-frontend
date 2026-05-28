@@ -155,6 +155,21 @@ h1 {
   background: rgba(255, 255, 255, 0.04);
   color: #f8fbff;
   font-weight: 700;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.notification-trigger:hover {
+  border-color: rgba(159, 216, 255, 0.54);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.notification-trigger:focus-visible,
+.notification-actions button:focus-visible,
+.notification-mark-read:focus-visible {
+  outline: 2px solid #9fd8ff;
+  outline-offset: 2px;
 }
 
 .notification-badge {
@@ -203,6 +218,7 @@ h1 {
 
 .notification-actions button,
 .notification-mark-read {
+  padding: 0.35rem 0.55rem;
   min-height: 2rem;
   border-radius: 0.6rem;
   border: 1px solid rgba(159, 216, 255, 0.3);

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNotifications } from '@/contexts'
 
 const typeLabelMap = {
@@ -21,14 +21,39 @@ function formatRelativeTime(value: string): string {
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false)
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications()
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const panelLabel = useMemo(
     () => (unreadCount > 0 ? `${unreadCount} unread notifications` : 'No unread notifications'),
     [unreadCount],
   )
 
+  useEffect(() => {
+    if (!isOpen) return undefined
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleOutsideClick)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen])
+
   return (
-    <div className="notification-center">
+    <div className="notification-center" ref={containerRef}>
       <button
         type="button"
         className="notification-trigger"
@@ -41,7 +66,12 @@ export default function NotificationCenter() {
       </button>
 
       {isOpen && (
-        <aside id="notification-panel" className="notification-panel" aria-label={panelLabel}>
+        <aside
+          id="notification-panel"
+          className="notification-panel"
+          aria-label={panelLabel}
+          aria-live="polite"
+        >
           <div className="notification-panel-header">
             <h2>Mission updates</h2>
             <div className="notification-actions">
