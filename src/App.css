@@ -93,6 +93,7 @@
   color: #d6e5ff;
   padding: 0.45rem;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .mobile-menu-trigger span {
@@ -168,6 +169,8 @@
   color: #d6e5ff;
   padding: 0.35rem 0.75rem;
   cursor: pointer;
+  min-height: 40px;
+  touch-action: manipulation;
 }
 
 .mobile-menu-links {
@@ -182,8 +185,12 @@
   border: 1px solid rgba(159, 216, 255, 0.15);
   color: #dce8ff;
   padding: 0.8rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
   font-weight: 600;
   background: rgba(18, 31, 56, 0.6);
+  touch-action: manipulation;
 }
 
 .mobile-menu-link-active {

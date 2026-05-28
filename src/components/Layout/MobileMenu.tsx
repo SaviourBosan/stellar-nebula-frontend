@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useEffect } from 'react'
 
 interface MobileMenuItem {
   label: string
@@ -12,6 +13,23 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ isOpen, items, onClose }: MobileMenuProps) {
+  useEffect(() => {
+    if (!isOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [isOpen, onClose])
+
   return (
     <div className={`mobile-menu-root ${isOpen ? 'is-open' : ''}`}>
       <button
@@ -21,10 +39,10 @@ export function MobileMenu({ isOpen, items, onClose }: MobileMenuProps) {
         onClick={onClose}
       />
 
-      <aside className="mobile-menu-panel" aria-label="Mobile navigation menu">
+      <aside className="mobile-menu-panel" aria-label="Mobile navigation menu" aria-hidden={!isOpen}>
         <div className="mobile-menu-header">
           <span>Menu</span>
-          <button type="button" className="mobile-menu-close" onClick={onClose}>
+          <button type="button" className="mobile-menu-close" onClick={onClose} aria-label="Close menu">
             Close
           </button>
         </div>
