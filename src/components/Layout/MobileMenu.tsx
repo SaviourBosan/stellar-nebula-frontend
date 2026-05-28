@@ -31,7 +31,15 @@ export function MobileMenu({ isOpen, items, onClose }: MobileMenuProps) {
 
         <nav className="mobile-menu-links">
           {items.map((item) => (
-            <NavLink key={item.to} to={item.to} className="mobile-menu-link" end={item.to === '/'}>
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                isActive ? 'mobile-menu-link mobile-menu-link-active' : 'mobile-menu-link'
+              }
+              end={item.to === '/'}
+              onClick={onClose}
+            >
               {item.label}
             </NavLink>
           ))}

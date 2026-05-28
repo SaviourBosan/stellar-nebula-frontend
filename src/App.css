@@ -186,6 +186,11 @@
   background: rgba(18, 31, 56, 0.6);
 }
 
+.mobile-menu-link-active {
+  color: #07111f;
+  background: #9fd8ff;
+}
+
 .help-modal-overlay {
   position: fixed;
   inset: 0;
