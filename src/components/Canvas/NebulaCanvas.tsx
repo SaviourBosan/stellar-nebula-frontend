@@ -1,7 +1,8 @@
 import { Suspense, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Preload } from '@react-three/drei'
+import { Preload } from '@react-three/drei'
 import { NebulaScene } from './NebulaScene'
+import { CameraControls } from './CameraControls'
 import { FpsCounter } from './FpsCounter'
 import { BloomEffect } from '../Effects'
 import { useGraphicsStore } from '@/store'
@@ -51,14 +52,7 @@ export function NebulaCanvas({ showFps = false }: NebulaCanvasProps) {
             intensity={bloomIntensity}
             performanceMode={performanceMode}
           />
-          <OrbitControls
-            enablePan={false}
-            enableZoom={true}
-            minDistance={2}
-            maxDistance={20}
-            autoRotate
-            autoRotateSpeed={0.4}
-          />
+          <CameraControls isMobile={deviceHints.isMobile} performanceMode={performanceMode} />
           <Preload all />
         </Suspense>
       </Canvas>
