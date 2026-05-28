@@ -13,6 +13,7 @@ export interface ResourceActions {
   setInventory: (inventory: ResourceInventory) => void
   setResource: (resource: ResourceType, amount: number) => void
   adjustResource: (resource: ResourceType, delta: number) => void
+  canAfford: (resource: ResourceType, amount: number) => boolean
   resetResources: () => void
 }
 
@@ -31,23 +32,24 @@ export const initialResourceState: ResourceState = {
 
 export const useResourceStore = create<ResourceStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialResourceState,
       setInventory: (inventory) => set({ inventory }),
       setResource: (resource, amount) =>
         set((state) => ({
           inventory: {
             ...state.inventory,
-            [resource]: amount,
+            [resource]: Math.max(0, amount),
           },
         })),
       adjustResource: (resource, delta) =>
         set((state) => ({
           inventory: {
             ...state.inventory,
-            [resource]: state.inventory[resource] + delta,
+            [resource]: Math.max(0, state.inventory[resource] + delta),
           },
         })),
+      canAfford: (resource, amount) => get().inventory[resource] >= amount,
       resetResources: () => set(initialResourceState),
     }),
     {
