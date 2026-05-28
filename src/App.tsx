@@ -3,10 +3,10 @@ import { Toaster } from 'react-hot-toast'
 import { NebulaCanvas } from './components/Canvas'
 import ErrorBoundary from './components/ErrorBoundary'
 import { WalletProvider } from './contexts/WalletContext'
-import { WalletDisplay } from './components/Wallet'
-import { ConnectModal } from './components/Wallet'
+import { ConnectModal, StatusIndicator, WalletDisplay } from './components/Wallet'
 import { isDev } from './config'
 import { useGraphicsStore } from '@/store'
+import { PerformanceMonitor } from './components/Debug'
 import './App.css'
 
 function VisualSettingsPanel() {
@@ -87,7 +87,19 @@ function AppInner() {
   return (
     <>
       <div style={{ width: '100vw', height: '100vh' }}>
-        <NebulaCanvas showFps={isDev} />
+        <NebulaCanvas />
+      </div>
+
+      {/* Status Indicator — top-left overlay */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 10,
+        }}
+      >
+        <StatusIndicator onOpenConnectModal={() => setModalOpen(true)} />
       </div>
 
       {/* Wallet HUD — top-right overlay */}
@@ -103,6 +115,7 @@ function AppInner() {
       </div>
 
       <ConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      {isDev && <PerformanceMonitor />}
       <VisualSettingsPanel />
 
       <Toaster
