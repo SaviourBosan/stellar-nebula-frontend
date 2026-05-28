@@ -1,9 +1,17 @@
 import { RouterProvider } from 'react-router-dom'
+import ErrorBoundary from './components/ErrorBoundary'
+import { WalletProvider } from './contexts'
 import { router } from './routes'
 import './App.css'
 
 function App() {
-  return <RouterProvider router={router} />
+  return (
+    <ErrorBoundary>
+      <WalletProvider>
+        <RouterProvider router={router} />
+      </WalletProvider>
+    </ErrorBoundary>
+  )
 }
 
 export default App
