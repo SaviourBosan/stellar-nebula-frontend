@@ -148,3 +148,144 @@ h1 {
     padding-inline: 0.75rem;
   }
 }
+
+/* ─── Tutorial / Onboarding ──────────────────────────────────────────────── */
+
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 17, 31, 0.75);
+  backdrop-filter: blur(6px);
+  padding: 1rem;
+}
+
+.tutorial-card {
+  background: rgba(10, 16, 32, 0.98);
+  border: 1px solid rgba(210, 222, 255, 0.16);
+  border-radius: 1.25rem;
+  padding: 2rem 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.tutorial-progress {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.tutorial-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  transition:
+    background 200ms ease,
+    width 200ms ease;
+}
+
+.tutorial-dot--active {
+  background: #32d6a5;
+  width: 1.2rem;
+}
+
+.tutorial-dot--done {
+  background: rgba(50, 214, 165, 0.4);
+}
+
+.tutorial-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.tutorial-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f8fbff;
+}
+
+.tutorial-description {
+  margin: 0;
+  color: #c8d4e6;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 34ch;
+}
+
+.tutorial-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #b9c6dd;
+  background: rgba(50, 214, 165, 0.08);
+  border: 1px solid rgba(50, 214, 165, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.tutorial-actions {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.tutorial-btn {
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.65rem 1.25rem;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.tutorial-btn--primary {
+  background: #32d6a5;
+  color: #07111f;
+  flex: 1;
+}
+
+.tutorial-btn--primary:hover {
+  background: #78eccb;
+}
+
+.tutorial-btn--ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: #c8d4e6;
+}
+
+.tutorial-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #f8fbff;
+}
+
+.tutorial-skip {
+  background: none;
+  border: none;
+  color: #b9c6dd;
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0.25rem 0.5rem;
+  transition: color 160ms ease;
+}
+
+.tutorial-skip:hover {
+  color: #f8fbff;
+}
+
+.tutorial-completed-msg {
+  margin: 0;
+  color: #c8d4e6;
+  font-size: 0.95rem;
+}
