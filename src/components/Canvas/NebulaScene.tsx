@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Group, Mesh } from 'three'
-import { Starfield } from '../Nebula'
+import { ParticleSystem, Starfield } from '../Nebula'
 
 function NebulaSphere() {
   const meshRef = useRef<Mesh>(null)
@@ -71,6 +71,7 @@ export function NebulaScene({ starfieldDensity, performanceMode = false }: Nebul
       <ambientLight intensity={0.3} />
       <pointLight position={[10, 10, 10]} intensity={1.5} color="#a78bfa" />
       <pointLight position={[-10, -5, -10]} intensity={0.8} color="#06b6d4" />
+      <ParticleSystem performanceMode={performanceMode} />
       <Starfield density={starfieldDensity} performanceMode={performanceMode} />
       <ScanPoints />
       <NebulaSphere />
