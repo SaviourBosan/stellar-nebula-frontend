@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { ContractEventFeed, TrustlineManager } from '@/components/Transaction'
 import { TransactionHistory } from '../components/History'
 import { getActiveStellarConfig } from '../config/stellar'
 import { useWallet } from '../contexts/WalletContext'
@@ -19,8 +20,7 @@ function ShipDashboard() {
           <p className="eyebrow">Ship Dashboard</p>
           <h1>Keep fleet systems in view.</h1>
           <p className="page-copy">
-            Review ship NFT metadata, resource balances, and signed upgrade
-            previews from one route.
+            Review ship NFT metadata, resource balances, and signed upgrade previews from one route.
           </p>
         </div>
 
@@ -96,6 +96,22 @@ function ShipDashboard() {
       </div>
 
       <TransactionHistory accountId={accountId} title="Recent activity" config={stellarConfig} />
+
+      <section style={transactionOpsSectionStyle}>
+        <div>
+          <p className="eyebrow">Transaction Ops</p>
+          <h2 style={opsHeadingStyle}>Trustline and event tools</h2>
+          <p style={opsCopyStyle}>
+            Verify asset trustlines, estimate fees, confirm changes with the connected wallet, and
+            stream contract events alongside the ship dashboard.
+          </p>
+        </div>
+
+        <div style={opsGridStyle}>
+          <TrustlineManager />
+          <ContractEventFeed />
+        </div>
+      </section>
     </section>
   )
 }
@@ -241,4 +257,27 @@ const upgradeButtonStyle: CSSProperties = {
   background: 'linear-gradient(90deg, rgba(50, 214, 165, 0.95), rgba(159, 216, 255, 0.95))',
   color: '#07111f',
   fontWeight: 800,
+}
+
+const transactionOpsSectionStyle: CSSProperties = {
+  display: 'grid',
+  gap: 18,
+  paddingTop: 8,
+}
+
+const opsHeadingStyle: CSSProperties = {
+  margin: '0.35rem 0 0',
+  fontSize: '1.4rem',
+}
+
+const opsCopyStyle: CSSProperties = {
+  margin: '0.55rem 0 0',
+  maxWidth: 760,
+  color: '#c8d4e6',
+}
+
+const opsGridStyle: CSSProperties = {
+  display: 'grid',
+  gap: 18,
+  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
 }
