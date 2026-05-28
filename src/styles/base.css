@@ -1,0 +1,40 @@
+:root {
+  color-scheme: dark;
+  color: rgba(248, 250, 252, 0.92);
+  background: #050716;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(232, 121, 249, 0.14), transparent 32%),
+    radial-gradient(circle at 84% 8%, rgba(96, 165, 250, 0.13), transparent 30%),
+    #050716;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
