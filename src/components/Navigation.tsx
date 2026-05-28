@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { HelpModal } from './Help/HelpModal'
+import { MobileMenu } from './Layout/MobileMenu'
 
 const navigationItems = [
   { label: 'Home', to: '/' },
@@ -11,6 +12,7 @@ const navigationItems = [
 
 function Navigation() {
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
     <>
@@ -37,9 +39,26 @@ function Navigation() {
             Help
           </button>
         </nav>
+
+        <button
+          type="button"
+          className="mobile-menu-trigger"
+          aria-label="Open navigation menu"
+          aria-expanded={isMobileMenuOpen}
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
       </header>
 
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        items={navigationItems}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
     </>
   )
 }

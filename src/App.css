@@ -85,6 +85,27 @@
   background: rgba(50, 214, 165, 0.3);
 }
 
+.mobile-menu-trigger {
+  display: none;
+  border: 1px solid rgba(159, 216, 255, 0.24);
+  border-radius: 10px;
+  background: transparent;
+  color: #d6e5ff;
+  padding: 0.45rem;
+  cursor: pointer;
+}
+
+.mobile-menu-trigger span {
+  display: block;
+  width: 1.2rem;
+  height: 2px;
+  background: #d6e5ff;
+}
+
+.mobile-menu-trigger span + span {
+  margin-top: 0.25rem;
+}
+
 .help-modal-overlay {
   position: fixed;
   inset: 0;
@@ -281,16 +302,16 @@ h1 {
 
 @media (max-width: 680px) {
   .site-header {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
   }
 
   .main-nav {
-    justify-content: flex-start;
+    display: none;
   }
 
-  .nav-link {
-    padding-inline: 0.75rem;
+  .mobile-menu-trigger {
+    display: inline-block;
   }
 
   .help-modal {
