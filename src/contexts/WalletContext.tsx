@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   connectFreighter,
@@ -34,6 +27,8 @@ export interface WalletContextValue {
   walletState: WalletState
   isLoading: boolean
   error: string | null
+  isReconnecting: boolean
+  reconnectError: string | null
   isFreighterInstalled: boolean
   isAlbedoAvailable: boolean
   connect: (type: WalletType) => Promise<void>
@@ -81,6 +76,32 @@ function clearPersistedWallet(): void {
   }
 }
 
+/**
+ * Validates if a persisted wallet session is still active.
+ * Checks if the wallet extension is still installed and can provide the public key.
+ */
+async function validateWalletSession(persisted: PersistedWallet): Promise<boolean> {
+  try {
+    if (persisted.walletType === 'freighter') {
+      const installed = await isFreighterInstalled()
+      if (!installed) return false
+
+      // Attempt to get the public key to ensure the wallet is still connected
+      const currentKey = await connectFreighter()
+      // Verify the key matches what we stored
+      return currentKey === persisted.publicKey
+    } else if (persisted.walletType === 'albedo') {
+      if (!isAlbedoAvailable()) return false
+      // For Albedo, just check availability (web-based, no key validation needed)
+      return true
+    }
+    return false
+  } catch {
+    // Session expired or wallet disconnected
+    return false
+  }
+}
+
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 interface WalletProviderProps {
@@ -88,15 +109,8 @@ interface WalletProviderProps {
 }
 
 function buildInitialWalletState(): WalletState {
-  const persisted = loadPersistedWallet()
-  if (persisted) {
-    return {
-      isConnected: true,
-      publicKey: persisted.publicKey,
-      walletType: persisted.walletType,
-      network: persisted.network,
-    }
-  }
+  // Don't auto-set connected state here - let auto-reconnect logic handle it
+  // This ensures we validate the session first
   return INITIAL_WALLET_STATE
 }
 
@@ -104,12 +118,55 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [walletState, setWalletState] = useState<WalletState>(buildInitialWalletState)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isReconnecting, setIsReconnecting] = useState(false)
+  const [reconnectError, setReconnectError] = useState<string | null>(null)
   const [freighterInstalled, setFreighterInstalled] = useState(false)
   const albedoAvailable = isAlbedoAvailable()
 
   // Check Freighter availability asynchronously
   useEffect(() => {
-    isFreighterInstalled().then(setFreighterInstalled).catch(() => setFreighterInstalled(false))
+    isFreighterInstalled()
+      .then(setFreighterInstalled)
+      .catch(() => setFreighterInstalled(false))
+  }, [])
+
+  // Auto-reconnect on mount if user was previously connected
+  useEffect(() => {
+    const autoReconnect = async () => {
+      const persisted = loadPersistedWallet()
+      if (!persisted) return
+
+      setIsReconnecting(true)
+      setReconnectError(null)
+
+      try {
+        // Validate that the persisted session is still active
+        const isValid = await validateWalletSession(persisted)
+        if (!isValid) {
+          // Session expired or wallet disconnected
+          setReconnectError('Previous wallet session expired. Please reconnect.')
+          clearPersistedWallet()
+          setIsReconnecting(false)
+          return
+        }
+
+        // Session is valid, restore the wallet state
+        setWalletState({
+          isConnected: true,
+          publicKey: persisted.publicKey,
+          walletType: persisted.walletType,
+          network: persisted.network,
+        })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to restore wallet connection'
+        setReconnectError(message)
+        clearPersistedWallet()
+      } finally {
+        setIsReconnecting(false)
+      }
+    }
+
+    autoReconnect()
   }, [])
 
   const connect = useCallback(async (type: WalletType) => {
@@ -122,7 +179,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
       if (type === 'freighter') {
         const installed = await isFreighterInstalled()
         if (!installed) {
-          throw new Error('Freighter is not installed. Visit https://www.freighter.app to install it.')
+          throw new Error(
+            'Freighter is not installed. Visit https://www.freighter.app to install it.'
+          )
         }
         publicKey = await connectFreighter()
         network = await getFreighterNetwork()
@@ -161,7 +220,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       }
       await connect(type)
     },
-    [walletState.isConnected, connect],
+    [walletState.isConnected, connect]
   )
 
   const signTransaction = useCallback(
@@ -182,7 +241,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
           return await signTransactionWithFreighter(
             xdr,
             passphraseMap[walletState.network],
-            walletState.publicKey ?? undefined,
+            walletState.publicKey ?? undefined
           )
         }
         if (walletState.walletType === 'albedo') {
@@ -197,7 +256,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         setIsLoading(false)
       }
     },
-    [walletState],
+    [walletState]
   )
 
   const clearError = useCallback(() => setError(null), [])
@@ -207,6 +266,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
       walletState,
       isLoading,
       error,
+      isReconnecting,
+      reconnectError,
       isFreighterInstalled: freighterInstalled,
       isAlbedoAvailable: albedoAvailable,
       connect,
@@ -219,6 +280,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
       walletState,
       isLoading,
       error,
+      isReconnecting,
+      reconnectError,
       freighterInstalled,
       albedoAvailable,
       connect,
@@ -226,7 +289,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       switchWallet,
       signTransaction,
       clearError,
-    ],
+    ]
   )
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>

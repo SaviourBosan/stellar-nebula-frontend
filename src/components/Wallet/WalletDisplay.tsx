@@ -18,7 +18,7 @@ interface WalletDisplayProps {
 }
 
 export function WalletDisplay({ onOpenConnectModal }: WalletDisplayProps) {
-  const { walletState, disconnect } = useWallet()
+  const { walletState, disconnect, isReconnecting, reconnectError } = useWallet()
   const { balances } = useAccountBalances(walletState.publicKey)
   const [copied, setCopied] = useState(false)
   const [tooltipVisible, setTooltipVisible] = useState(false)
@@ -43,6 +43,27 @@ export function WalletDisplay({ onOpenConnectModal }: WalletDisplayProps) {
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
     }
   }, [])
+
+  // Show reconnecting state
+  if (isReconnecting) {
+    return (
+      <div style={containerStyle} aria-label="Reconnecting wallet">
+        <div style={reconnectingIndicatorStyle}>
+          <div style={spinnerStyle} aria-hidden="true" />
+          <span style={reconnectingTextStyle}>Reconnecting…</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Show reconnect error
+  if (reconnectError && !walletState.isConnected) {
+    return (
+      <button type="button" onClick={onOpenConnectModal} style={connectButtonStyle}>
+        Connect Wallet
+      </button>
+    )
+  }
 
   if (!walletState.isConnected || !walletState.publicKey) {
     return (
@@ -209,4 +230,27 @@ const connectButtonStyle: React.CSSProperties = {
   fontSize: '0.88em',
   fontWeight: 500,
   transition: 'border-color 0.2s, background-color 0.2s',
+}
+
+const reconnectingIndicatorStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '8px 14px',
+}
+
+const spinnerStyle: React.CSSProperties = {
+  display: 'inline-block',
+  width: 14,
+  height: 14,
+  border: '2px solid rgba(100, 108, 255, 0.3)',
+  borderTopColor: '#6469ff',
+  borderRadius: '50%',
+  animation: 'spin 0.8s linear infinite',
+}
+
+const reconnectingTextStyle: React.CSSProperties = {
+  fontSize: '0.88em',
+  color: 'rgba(165, 173, 255, 0.8)',
+  fontWeight: 500,
 }
