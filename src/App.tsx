@@ -85,21 +85,9 @@ function AppInner() {
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
-    <>
-      <div style={{ width: '100vw', height: '100vh' }}>
-        <NebulaCanvas />
-      </div>
-
-      {/* Status Indicator — top-left overlay */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 16,
-          left: 16,
-          zIndex: 10,
-        }}
-      >
-        <StatusIndicator onOpenConnectModal={() => setModalOpen(true)} />
+    <main className="min-h-screen bg-nebula-radial text-slate-100 dark">
+      <div className="h-screen w-screen">
+        <NebulaCanvas showFps={isDev} />
       </div>
 
       {/* Wallet HUD — top-right overlay */}
@@ -135,7 +123,7 @@ function AppInner() {
           },
         }}
       />
-    </>
+    </main>
   )
 }
 
