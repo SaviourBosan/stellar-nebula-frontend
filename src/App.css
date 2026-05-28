@@ -148,3 +148,140 @@ h1 {
     padding-inline: 0.75rem;
   }
 }
+
+/* ─── Settings Panel ─────────────────────────────────────────────────────── */
+
+.settings-panel {
+  background: rgba(10, 16, 32, 0.98);
+  border: 1px solid rgba(210, 222, 255, 0.14);
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(210, 222, 255, 0.1);
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fbff;
+}
+
+.settings-close {
+  background: none;
+  border: none;
+  color: #b9c6dd;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.settings-close:hover {
+  color: #f8fbff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.settings-body {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-section-title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #32d6a5;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.settings-label {
+  font-size: 0.88rem;
+  color: #c8d4e6;
+}
+
+.settings-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(210, 222, 255, 0.18);
+  border-radius: 0.5rem;
+  color: #f8fbff;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 160ms ease;
+}
+
+.settings-select:focus {
+  border-color: #32d6a5;
+}
+
+.settings-select option {
+  background: #07111f;
+}
+
+.settings-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #c8d4e6;
+  cursor: pointer;
+}
+
+.settings-toggle {
+  position: relative;
+  width: 2.5rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: background 200ms ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.settings-toggle--on {
+  background: #32d6a5;
+}
+
+.settings-toggle-thumb {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: #f8fbff;
+  transition: transform 200ms ease;
+}
+
+.settings-toggle--on .settings-toggle-thumb {
+  transform: translateX(1.1rem);
+}
