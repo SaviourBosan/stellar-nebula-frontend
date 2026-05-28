@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, act } from '../../test/utils'
+import { render, screen, act, waitFor } from '../../test/utils'
 import userEvent from '@testing-library/user-event'
 import { WalletProvider, useWallet } from '../WalletContext'
 
@@ -15,13 +15,16 @@ vi.mock('@services/wallets', () => ({
 }))
 
 function TestConsumer() {
-  const { walletState, connect, disconnect, isLoading, error } = useWallet()
+  const { walletState, connect, disconnect, isLoading, error, isReconnecting, reconnectError } =
+    useWallet()
   return (
     <div>
       <span data-testid="connected">{String(walletState.isConnected)}</span>
       <span data-testid="pubkey">{walletState.publicKey ?? 'none'}</span>
       <span data-testid="loading">{String(isLoading)}</span>
       <span data-testid="error">{error ?? 'none'}</span>
+      <span data-testid="isReconnecting">{String(isReconnecting)}</span>
+      <span data-testid="reconnectError">{reconnectError ?? 'none'}</span>
       <button onClick={() => connect('freighter')}>Connect Freighter</button>
       <button onClick={() => connect('albedo')}>Connect Albedo</button>
       <button onClick={disconnect}>Disconnect</button>
@@ -33,7 +36,7 @@ function renderWithProvider() {
   return render(
     <WalletProvider>
       <TestConsumer />
-    </WalletProvider>,
+    </WalletProvider>
   )
 }
 
@@ -105,5 +108,61 @@ describe('WalletProvider', () => {
       await userEvent.click(screen.getByText('Disconnect'))
     })
     expect(localStorage.getItem('stellar-nebula:wallet')).toBeNull()
+  })
+
+  describe('Auto-reconnect', () => {
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    it('does not auto-reconnect when no persisted wallet exists', () => {
+      renderWithProvider()
+
+      // Should not be reconnecting if there's no persisted wallet
+      expect(screen.getByTestId('isReconnecting').textContent).toBe('false')
+      expect(screen.getByTestId('connected').textContent).toBe('false')
+    })
+
+    it('auto-reconnects to persisted wallet on mount', async () => {
+      // Setup: Simulate a previously saved connection
+      localStorage.setItem(
+        'stellar-nebula:wallet',
+        JSON.stringify({
+          publicKey: 'GFREIGHTER123',
+          walletType: 'freighter',
+          network: 'testnet',
+        })
+      )
+
+      renderWithProvider()
+
+      // Should be reconnecting initially
+      expect(screen.getByTestId('isReconnecting').textContent).toBe('true')
+
+      // Wait for auto-reconnect to complete (when isReconnecting becomes false)
+      await waitFor(() => {
+        expect(screen.getByTestId('isReconnecting').textContent).toBe('false')
+      })
+
+      expect(screen.getByTestId('connected').textContent).toBe('true')
+      expect(screen.getByTestId('pubkey').textContent).toBe('GFREIGHTER123')
+    })
+
+    it('persisted wallet triggers reconnection on mount', () => {
+      // Setup: Simulate a previously saved connection
+      localStorage.setItem(
+        'stellar-nebula:wallet',
+        JSON.stringify({
+          publicKey: 'GFREIGHTER123',
+          walletType: 'freighter',
+          network: 'testnet',
+        })
+      )
+
+      renderWithProvider()
+
+      // Should have reconnection in progress
+      expect(screen.getByTestId('isReconnecting').textContent).toBe('true')
+    })
   })
 })
