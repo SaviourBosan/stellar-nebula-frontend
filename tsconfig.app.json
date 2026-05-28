@@ -5,7 +5,7 @@
     "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest/globals"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -22,7 +22,22 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*":           ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@hooks/*":      ["src/hooks/*"],
+      "@utils/*":      ["src/utils/*"],
+      "@store/*":      ["src/store/*"],
+      "@types/*":      ["src/types/*"],
+      "@constants/*":  ["src/constants/*"],
+      "@config/*":     ["src/config/*"],
+      "@services/*":   ["src/services/*"],
+      "@assets/*":     ["src/assets/*"]
+    }
   },
   "include": ["src"]
 }
