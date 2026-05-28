@@ -1,11 +1,14 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
+export type ZoomLevel = 'overview' | 'exploration' | 'detail'
+
 export interface GraphicsState {
   bloomEnabled: boolean
   bloomIntensity: number
   performanceMode: boolean
   starfieldDensity: number
+  zoomLevel: ZoomLevel
 }
 
 export interface GraphicsActions {
@@ -13,6 +16,7 @@ export interface GraphicsActions {
   setBloomIntensity: (intensity: number) => void
   setPerformanceMode: (enabled: boolean) => void
   setStarfieldDensity: (density: number) => void
+  setZoomLevel: (level: ZoomLevel) => void
 }
 
 export type GraphicsStore = GraphicsState & GraphicsActions
@@ -24,6 +28,7 @@ export const initialGraphicsState: GraphicsState = {
   bloomIntensity: 0.55,
   performanceMode: false,
   starfieldDensity: 0.85,
+  zoomLevel: 'exploration',
 }
 
 const clampBloomIntensity = (value: number) => Math.min(1.2, Math.max(0, value))
@@ -34,10 +39,12 @@ export const useGraphicsStore = create<GraphicsStore>()(
     (set) => ({
       ...initialGraphicsState,
       setBloomEnabled: (bloomEnabled) => set({ bloomEnabled }),
-      setBloomIntensity: (bloomIntensity) => set({ bloomIntensity: clampBloomIntensity(bloomIntensity) }),
+      setBloomIntensity: (bloomIntensity) =>
+        set({ bloomIntensity: clampBloomIntensity(bloomIntensity) }),
       setPerformanceMode: (performanceMode) => set({ performanceMode }),
       setStarfieldDensity: (starfieldDensity) =>
         set({ starfieldDensity: clampStarfieldDensity(starfieldDensity) }),
+      setZoomLevel: (zoomLevel) => set({ zoomLevel }),
     }),
     {
       name: graphicsStoreStorageKey,

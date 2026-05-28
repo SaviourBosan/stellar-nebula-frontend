@@ -1,3 +1,8 @@
 export { useLocalStorage } from './useLocalStorage'
 export { useDebounce } from './useDebounce'
 export { useFreighterWallet } from './useFreighterWallet'
+export { useTouchGestures } from './useTouchGestures'
+export { useNebulaZoom, ZOOM_LEVELS } from './useNebulaZoom'
+export type { ZoomLevelConfig } from './useNebulaZoom'
+export { useNebulaScan } from './contracts'
+export type { UseNebulaScanOptions, UseNebulaScanReturn } from './contracts'

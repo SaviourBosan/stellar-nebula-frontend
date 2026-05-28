@@ -3,6 +3,8 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { Vector3 } from 'three'
+import { useTouchGestures } from '@/hooks/useTouchGestures'
+import { useNebulaZoom } from '@/hooks/useNebulaZoom'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -13,18 +15,28 @@ const AUTO_ROTATE_SPEED = 0.3
 const KEYBOARD_ORBIT_SPEED = 2.2
 const KEYBOARD_ZOOM_SPEED = 0.8
 const PRECISION_MODIFIER = 0.3
+const TOUCH_ROTATE_SENSITIVITY = 0.003
+const TOUCH_ZOOM_SENSITIVITY = 0.8
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 interface CameraControlsProps {
   isMobile?: boolean
   performanceMode?: boolean
+  onTapToScan?: (x: number, y: number) => void
 }
 
-export function CameraControls({ isMobile = false, performanceMode = false }: CameraControlsProps) {
+export function CameraControls({
+  isMobile = false,
+  performanceMode = false,
+  onTapToScan,
+}: CameraControlsProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null)
   const { camera, gl } = useThree()
   const keysDown = useRef(new Set<string>())
+  const canvasRef = useRef<HTMLElement>(gl.domElement)
+
+  const { jumpToLevel } = useNebulaZoom(controlsRef)
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -40,8 +52,13 @@ export function CameraControls({ isMobile = false, performanceMode = false }: Ca
           controlsRef.current.autoRotate = !controlsRef.current.autoRotate
         }
       }
+
+      // Zoom level keyboard shortcuts
+      if (key === '1') jumpToLevel('overview')
+      if (key === '2') jumpToLevel('exploration')
+      if (key === '3') jumpToLevel('detail')
     },
-    [gl]
+    [gl, jumpToLevel]
   )
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
@@ -50,6 +67,7 @@ export function CameraControls({ isMobile = false, performanceMode = false }: Ca
 
   useEffect(() => {
     const canvas = gl.domElement
+    canvasRef.current = canvas
     canvas.setAttribute('tabindex', '0')
     canvas.addEventListener('keydown', handleKeyDown)
     canvas.addEventListener('keyup', handleKeyUp)
@@ -58,6 +76,46 @@ export function CameraControls({ isMobile = false, performanceMode = false }: Ca
       canvas.removeEventListener('keyup', handleKeyUp)
     }
   }, [gl, handleKeyDown, handleKeyUp])
+
+  useTouchGestures(canvasRef as React.RefObject<HTMLElement>, {
+    onPinchZoom: (scaleDelta) => {
+      const controls = controlsRef.current
+      if (!controls) return
+      const target = controls.target
+      const offset = new Vector3().subVectors(camera.position, target)
+      const currentDist = offset.length()
+      const newDist = Math.min(
+        MAX_DISTANCE,
+        Math.max(
+          MIN_DISTANCE,
+          currentDist / (scaleDelta * TOUCH_ZOOM_SENSITIVITY + (1 - TOUCH_ZOOM_SENSITIVITY))
+        )
+      )
+      offset.normalize().multiplyScalar(newDist)
+      camera.position.copy(target.clone().add(offset))
+      controls.update()
+    },
+    onSwipeRotate: (dx, dy) => {
+      controlsRef.current?.rotate(dx * TOUCH_ROTATE_SENSITIVITY, dy * TOUCH_ROTATE_SENSITIVITY)
+    },
+    onTwoFingerPan: (dx, dy) => {
+      const controls = controlsRef.current
+      if (!controls) return
+      const panSpeed = 0.01
+      const right = new Vector3()
+      const up = new Vector3()
+      camera.matrix.extractBasis(right, up, new Vector3())
+      const panOffset = right.multiplyScalar(-dx * panSpeed).add(up.multiplyScalar(dy * panSpeed))
+      camera.position.add(panOffset)
+      controls.target.add(panOffset)
+      controls.update()
+    },
+    onTap: (x, y) => {
+      onTapToScan?.(x, y)
+      const canvas = gl.domElement
+      canvas.dispatchEvent(new MouseEvent('click', { clientX: x, clientY: y, bubbles: true }))
+    },
+  })
 
   useFrame((_, delta) => {
     const controls = controlsRef.current

@@ -22,6 +22,7 @@ export {
   initialGraphicsState,
   graphicsStoreStorageKey,
   useGraphicsStore,
+  type ZoomLevel,
   type GraphicsActions,
   type GraphicsState,
   type GraphicsStore,
