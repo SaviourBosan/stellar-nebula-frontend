@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Group, Mesh } from 'three'
 import { ParticleSystem, Starfield } from '../Nebula'
@@ -28,44 +28,67 @@ function NebulaSphere() {
   )
 }
 
-function ScanPoints() {
-  const pointsRef = useRef<Group>(null)
-
-  useFrame((_, delta) => {
-    if (pointsRef.current) {
-      pointsRef.current.rotation.z -= delta * 0.08
-      pointsRef.current.rotation.y += delta * 0.12
-    }
-  })
-
-  return (
-    <group ref={pointsRef}>
-      <mesh position={[2.2, 0.2, 0.4]}>
-        <sphereGeometry args={[0.06, 12, 12]} />
-        <meshBasicMaterial color="#67e8f9" toneMapped={false} />
-      </mesh>
-      <mesh position={[-1.9, 0.8, -0.2]}>
-        <sphereGeometry args={[0.05, 12, 12]} />
-        <meshBasicMaterial color="#c084fc" toneMapped={false} />
-      </mesh>
-      <mesh position={[0.9, -1.8, 0.6]}>
-        <sphereGeometry args={[0.055, 12, 12]} />
-        <meshBasicMaterial color="#f0abfc" toneMapped={false} />
-      </mesh>
-      <mesh position={[-0.7, 1.7, -0.5]}>
-        <sphereGeometry args={[0.045, 12, 12]} />
-        <meshBasicMaterial color="#a78bfa" toneMapped={false} />
-      </mesh>
-    </group>
-  )
-}
-
 interface NebulaSceneProps {
   starfieldDensity: number
   performanceMode?: boolean
 }
 
 export function NebulaScene({ starfieldDensity, performanceMode = false }: NebulaSceneProps) {
+  const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
+  const [scanningPoints, setScanningPoints] = useState<Set<string>>(new Set())
+
+  const handleScan = useCallback((pointId: string, resourceType: ResourceType, amount: number) => {
+    // Set scanning state
+    setScanningPoints((prev) => new Set([...prev, pointId]))
+
+    // Simulate scan transaction
+    toast.loading(`Scanning ${resourceType} deposit...`, { id: pointId })
+
+    setTimeout(() => {
+      // Remove scanning state
+      setScanningPoints((prev) => {
+        const next = new Set(prev)
+        next.delete(pointId)
+        return next
+      })
+
+      // Set cooldown (5 seconds)
+      setCooldowns((prev) => ({ ...prev, [pointId]: 5 }))
+
+      // Show success message
+      toast.success(`Scanned ${amount} units of ${resourceType}`, { id: pointId })
+
+      // Clear cooldown after duration
+      setTimeout(() => {
+        setCooldowns((prev) => {
+          const next = { ...prev }
+          delete next[pointId]
+          return next
+        })
+      }, 5000)
+    }, 2000)
+  }, [])
+
+  // Update cooldowns
+  useFrame((_state, delta: number) => {
+    setCooldowns((prev) => {
+      const next = { ...prev }
+      let hasChanges = false
+
+      Object.keys(next).forEach((key) => {
+        if (next[key] > 0) {
+          next[key] -= delta
+          if (next[key] <= 0) {
+            delete next[key]
+            hasChanges = true
+          }
+        }
+      })
+
+      return hasChanges ? next : prev
+    })
+  })
+
   return (
     <>
       <ambientLight intensity={0.3} />
@@ -73,8 +96,16 @@ export function NebulaScene({ starfieldDensity, performanceMode = false }: Nebul
       <pointLight position={[-10, -5, -10]} intensity={0.8} color="#06b6d4" />
       <ParticleSystem performanceMode={performanceMode} />
       <Starfield density={starfieldDensity} performanceMode={performanceMode} />
-      <ScanPoints />
+      <InteractiveScanPoints 
+        onScan={handleScan}
+        cooldowns={cooldowns}
+        scanningPoints={scanningPoints}
+      />
       <NebulaSphere />
+      <ShipModel shipClass="scout" position={[3, 0, 0]} scale={0.8} autoRotate rotationSpeed={0.3} performanceMode={performanceMode} />
+      <ShipModel shipClass="freighter" position={[-3, 1, -1]} scale={0.6} autoRotate rotationSpeed={0.2} performanceMode={performanceMode} />
+      <ShipModel shipClass="warship" position={[0, -2, 2]} scale={0.7} autoRotate rotationSpeed={0.4} performanceMode={performanceMode} />
+      <ShipModel shipClass="explorer" position={[2, 2, -2]} scale={0.5} autoRotate rotationSpeed={0.25} performanceMode={performanceMode} />
     </>
   )
 }
