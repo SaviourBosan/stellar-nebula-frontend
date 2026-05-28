@@ -58,9 +58,18 @@ export default function LoadingScreen({
 
       <div className="loading-content">
         <p className="loading-stage">{stageLabel}</p>
-        <p className="loading-message">{displayMessage}</p>
+        <p className="loading-message" key={displayMessage}>
+          {displayMessage}
+        </p>
 
-        <div className="loading-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={boundedProgress}>
+        <div
+          className="loading-progress"
+          role="progressbar"
+          aria-label="Application loading progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={boundedProgress}
+        >
           <span className="loading-progress-fill" style={{ width: `${boundedProgress}%` }} />
         </div>
 

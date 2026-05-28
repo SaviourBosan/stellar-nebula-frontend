@@ -147,6 +147,7 @@ h1 {
     radial-gradient(circle at 86% 0%, rgba(159, 216, 255, 0.18), transparent 24rem),
     rgba(8, 14, 30, 0.88);
   overflow: hidden;
+  animation: loading-fade-in 260ms ease-out;
 }
 
 .loading-stars {
@@ -234,6 +235,7 @@ h1 {
   color: #f8fbff;
   font-size: clamp(1rem, 2vw, 1.2rem);
   font-weight: 700;
+  animation: message-fade 300ms ease-out;
 }
 
 .loading-progress {
@@ -273,6 +275,28 @@ h1 {
   }
 }
 
+@keyframes loading-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes message-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes spin-reverse {
   from {
     transform: scale(0.72) rotate(360deg);
@@ -290,6 +314,11 @@ h1 {
 
   .loading-progress-fill {
     transition: none;
+  }
+
+  .loading-screen,
+  .loading-message {
+    animation: none;
   }
 }
 
