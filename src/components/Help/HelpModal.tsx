@@ -118,6 +118,9 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 ))}
             </article>
           ))}
+          {filteredItems.length === 0 && (
+            <p className="help-faq-empty">No FAQ entries match your search yet.</p>
+          )}
         </div>
 
         <section className="help-wallet-section" aria-label="Wallet help">
