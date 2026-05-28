@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 export interface HelpFaqItem {
   id: string
@@ -46,6 +46,18 @@ interface HelpModalProps {
 }
 
 export function HelpModal({ isOpen, onClose }: HelpModalProps) {
+  const [query, setQuery] = useState('')
+
+  const normalizedQuery = query.trim().toLowerCase()
+  const filteredItems = useMemo(() => {
+    if (!normalizedQuery) return BASE_FAQ_ITEMS
+
+    return BASE_FAQ_ITEMS.filter((item) => {
+      const haystack = `${item.question} ${item.answer} ${item.category}`.toLowerCase()
+      return haystack.includes(normalizedQuery)
+    })
+  }, [normalizedQuery])
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -81,16 +93,29 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
           Explore game basics and wallet guidance to get unstuck quickly.
         </p>
 
+        <label className="help-search" htmlFor="help-search-input">
+          <span>Search FAQ</span>
+          <input
+            id="help-search-input"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search game mechanics, wallet, troubleshooting..."
+          />
+        </label>
+
         <div className="help-modal-faq" role="list">
           {FAQ_CATEGORIES.map((category) => (
             <article key={category} className="help-faq-category">
               <h3 className="help-faq-category-title">{category}</h3>
-              {BASE_FAQ_ITEMS.filter((item) => item.category === category).map((item) => (
+              {filteredItems
+                .filter((item) => item.category === category)
+                .map((item) => (
                 <details key={item.id} className="help-faq-item">
                   <summary>{item.question}</summary>
                   <p>{item.answer}</p>
                 </details>
-              ))}
+                ))}
             </article>
           ))}
         </div>
