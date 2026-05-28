@@ -29,6 +29,8 @@
     "paths": {
       "@/*":           ["src/*"],
       "@components/*": ["src/components/*"],
+      "@contexts/*":   ["src/contexts/*"],
+      "@hooks":         ["src/hooks/index.ts"],
       "@hooks/*":      ["src/hooks/*"],
       "@utils/*":      ["src/utils/*"],
       "@store/*":      ["src/store/*"],
