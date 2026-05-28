@@ -8,6 +8,7 @@ export interface SettingsState {
   graphicsQuality: GraphicsQuality
   soundEnabled: boolean
   notificationsEnabled: boolean
+  analyticsEnabled: boolean
   network: StellarNetwork
 }
 
@@ -15,6 +16,7 @@ export interface SettingsActions {
   setGraphicsQuality: (quality: GraphicsQuality) => void
   setSoundEnabled: (enabled: boolean) => void
   setNotificationsEnabled: (enabled: boolean) => void
+  setAnalyticsEnabled: (enabled: boolean) => void
   setNetwork: (network: StellarNetwork) => void
 }
 
@@ -26,6 +28,7 @@ export const initialSettingsState: SettingsState = {
   graphicsQuality: 'high',
   soundEnabled: true,
   notificationsEnabled: true,
+  analyticsEnabled: true,
   network: 'futurenet',
 }
 
@@ -36,6 +39,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setGraphicsQuality: (graphicsQuality) => set({ graphicsQuality }),
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
+      setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
       setNetwork: (network) => set({ network }),
     }),
     {

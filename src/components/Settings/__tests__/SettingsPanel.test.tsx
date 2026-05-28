@@ -13,8 +13,10 @@ describe('SettingsPanel', () => {
       graphicsQuality: 'high',
       soundEnabled: true,
       notificationsEnabled: true,
+      analyticsEnabled: true,
       network: 'futurenet',
     })
+    localStorage.clear()
   })
 
   it('renders all settings sections', () => {
@@ -23,6 +25,7 @@ describe('SettingsPanel', () => {
     expect(screen.getByText('Graphics')).toBeInTheDocument()
     expect(screen.getByText('Sound')).toBeInTheDocument()
     expect(screen.getByText('Notifications')).toBeInTheDocument()
+    expect(screen.getByText('Privacy')).toBeInTheDocument()
     expect(screen.getByText('Network')).toBeInTheDocument()
   })
 
@@ -45,6 +48,14 @@ describe('SettingsPanel', () => {
     const toggle = screen.getByRole('switch', { name: /notifications/i })
     fireEvent.click(toggle)
     expect(useSettingsStore.getState().notificationsEnabled).toBe(false)
+  })
+
+  it('toggles privacy analytics opt-out', () => {
+    renderPanel()
+    const toggle = screen.getByRole('switch', { name: /privacy analytics/i })
+    fireEvent.click(toggle)
+    expect(useSettingsStore.getState().analyticsEnabled).toBe(false)
+    expect(localStorage.getItem('stellar-nebula:analytics-opt-out')).toBe('true')
   })
 
   it('changes network', () => {
