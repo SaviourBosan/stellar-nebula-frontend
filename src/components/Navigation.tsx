@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
+
 import { HelpModal } from './Help/HelpModal'
 import { MobileMenu } from './Layout/MobileMenu'
+
+import NotificationCenter from './Notifications/NotificationCenter'
 
 const navigationItems = [
   { label: 'Home', to: '/' },
@@ -53,6 +56,7 @@ function Navigation() {
         </button>
       </header>
 
+
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       <MobileMenu
         isOpen={isMobileMenuOpen}
@@ -60,6 +64,27 @@ function Navigation() {
         onClose={() => setIsMobileMenuOpen(false)}
       />
     </>
+
+      <nav className="main-nav" aria-label="Primary navigation">
+        {navigationItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              isActive ? 'nav-link nav-link-active' : 'nav-link'
+            }
+            end={item.to === '/'}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="header-tools">
+        <NotificationCenter />
+      </div>
+    </header>
+
   )
 }
 

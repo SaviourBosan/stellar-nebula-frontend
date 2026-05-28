@@ -1,6 +1,6 @@
 import { RouterProvider } from 'react-router-dom'
 import ErrorBoundary from './components/ErrorBoundary'
-import { WalletProvider } from './contexts'
+import { WalletProvider } from './contexts/WalletContext'
 import { router } from './routes'
 import './App.css'
 
