@@ -119,6 +119,25 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
             </article>
           ))}
         </div>
+
+        <section className="help-wallet-section" aria-label="Wallet help">
+          <h3>Wallet Help</h3>
+          <ul>
+            <li>Keep your wallet unlocked before opening game actions.</li>
+            <li>Approve network requests from your wallet extension prompt.</li>
+            <li>If signing fails, reconnect your wallet from the profile section.</li>
+          </ul>
+        </section>
+
+        <section className="help-links" aria-label="External documentation">
+          <h3>Documentation</h3>
+          <a href="https://developers.stellar.org/" target="_blank" rel="noreferrer noopener">
+            Stellar developer docs
+          </a>
+          <a href="https://developers.stellar.org/docs/tools/wallets/" target="_blank" rel="noreferrer noopener">
+            Wallet tools and guides
+          </a>
+        </section>
       </section>
     </div>
   )
