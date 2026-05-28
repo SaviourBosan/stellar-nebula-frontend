@@ -59,9 +59,25 @@ interface InventoryProps {
 
 export function Inventory({ inventory: inventoryProp, compact = false, title = 'Resource Inventory' }: InventoryProps) {
   const storeInventory = useResourceStore((state) => state.inventory)
+  const optimisticTransactions = useResourceStore((state) => state.optimisticTransactions)
   const inventory = inventoryProp ?? storeInventory
   const [filter, setFilter] = useState<InventoryFilter>('all')
   const [sortBy, setSortBy] = useState<InventorySort>('amount-desc')
+  const pendingChanges = useMemo(
+    () =>
+      optimisticTransactions
+        .filter((transaction) => transaction.status === 'pending')
+        .reduce<Partial<Record<ResourceType, number>>>((changes, transaction) => {
+          for (const [resource, delta] of Object.entries(transaction.changes) as Array<
+            [ResourceType, number | undefined]
+          >) {
+            if (!delta) continue
+            changes[resource] = (changes[resource] ?? 0) + delta
+          }
+          return changes
+        }, {}),
+    [optimisticTransactions]
+  )
 
   const rows = useMemo(() => {
     const entries = Object.entries(inventory) as Array<[ResourceType, number]>
@@ -141,11 +157,12 @@ export function Inventory({ inventory: inventoryProp, compact = false, title = '
         {rows.map(([resource, amount]) => {
           const meta = RESOURCE_META[resource]
           const severity = amount === 0 ? 'empty' : amount < 100 ? 'low' : 'ready'
+          const pendingDelta = pendingChanges[resource] ?? 0
 
           return (
             <article
               key={resource}
-              className={`resource-card resource-card-${severity}`}
+              className={`resource-card resource-card-${severity} ${pendingDelta ? 'resource-card-pending' : ''}`}
               title={`${meta.label}: ${meta.description}`}
             >
               <div className="resource-badge" style={{ background: meta.accent }}>
@@ -156,6 +173,12 @@ export function Inventory({ inventory: inventoryProp, compact = false, title = '
                   <h3>{meta.label}</h3>
                   <span className="resource-amount">{amount}</span>
                 </div>
+                {pendingDelta !== 0 && (
+                  <p className="resource-pending" aria-live="polite">
+                    Pending {pendingDelta > 0 ? '+' : ''}
+                    {pendingDelta}
+                  </p>
+                )}
                 <p>{meta.description}</p>
               </div>
             </article>

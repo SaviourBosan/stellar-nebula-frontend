@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGraphicsStore } from '@/store'
+import { trackEvent } from '@/services/analytics'
 
 const BASE_STAR_COUNT = 4200
 
@@ -50,7 +51,8 @@ export function PerformanceMonitor() {
       const elapsed = now - lastTimeRef.current
 
       if (elapsed >= 1000) {
-        setFps(Math.round((frameCountRef.current * 1000) / elapsed))
+        const nextFps = Math.round((frameCountRef.current * 1000) / elapsed)
+        setFps(nextFps)
         frameCountRef.current = 0
         lastTimeRef.current = now
 
@@ -59,6 +61,13 @@ export function PerformanceMonitor() {
           setMemUsed(mem.usedJSHeapSize)
           setMemLimit(mem.jsHeapSizeLimit)
         }
+
+        trackEvent('performance_metric', {
+          metric: 'fps',
+          value: nextFps,
+          performanceMode,
+          particleCount,
+        })
       }
 
       rafRef.current = requestAnimationFrame(tick)
@@ -66,7 +75,7 @@ export function PerformanceMonitor() {
 
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [visible])
+  }, [particleCount, performanceMode, visible])
 
   if (!visible) return null
 

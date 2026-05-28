@@ -121,11 +121,12 @@ interface UpgradeModalProps {
   isOpen: boolean
   ship: Ship | null
   inventory: ResourceInventory
+  isPending?: boolean
   onClose: () => void
-  onConfirm: (upgrade: ShipUpgradeOption) => void
+  onConfirm: (upgrade: ShipUpgradeOption) => void | Promise<void>
 }
 
-export function UpgradeModal({ isOpen, ship, inventory, onClose, onConfirm }: UpgradeModalProps) {
+export function UpgradeModal({ isOpen, ship, inventory, isPending = false, onClose, onConfirm }: UpgradeModalProps) {
   const [selectedUpgradeId, setSelectedUpgradeId] = useState<UpgradeId>(SHIP_UPGRADES[0].id)
 
   useEffect(() => {
@@ -146,7 +147,7 @@ export function UpgradeModal({ isOpen, ship, inventory, onClose, onConfirm }: Up
 
   const plan = useMemo(() => buildBatchTransaction(operations), [operations])
   const canAfford = hasEnoughResources(inventory, selectedUpgrade.cost)
-  const disabled = !ship || !canAfford
+  const disabled = !ship || !canAfford || isPending
 
   if (!isOpen) return null
 
@@ -240,6 +241,11 @@ export function UpgradeModal({ isOpen, ship, inventory, onClose, onConfirm }: Up
               <p className="detail-copy">
                 {plan.totalOperations} ordered operations, {plan.totalFeeStroops} stroops total fee.
               </p>
+              {isPending && (
+                <p className="detail-pending" role="status">
+                  Upgrade transaction pending confirmation.
+                </p>
+              )}
               {!plan.isValid && (
                 <p className="detail-error">{plan.errors[0]?.message ?? 'Batch plan failed validation.'}</p>
               )}
@@ -265,7 +271,7 @@ export function UpgradeModal({ isOpen, ship, inventory, onClose, onConfirm }: Up
             onClick={() => onConfirm(selectedUpgrade)}
             disabled={disabled}
           >
-            {disabled ? 'Resources unavailable' : 'Apply upgrade'}
+            {isPending ? 'Confirming...' : disabled ? 'Resources unavailable' : 'Apply upgrade'}
           </button>
         </div>
       </div>

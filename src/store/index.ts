@@ -13,6 +13,8 @@ export {
   resourceStoreStorageKey,
   useResourceStore,
   type ResourceInventory,
+  type OptimisticResourceStatus,
+  type OptimisticResourceTransaction,
   type ResourceState,
   type ResourceStore,
   type ResourceType,

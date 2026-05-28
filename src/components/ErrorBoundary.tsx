@@ -1,5 +1,6 @@
 import type { ErrorInfo, ReactNode } from 'react'
 import { Component } from 'react'
+import { trackEvent } from '../services/analytics'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -24,6 +25,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    trackEvent('error_reported', {
+      errorName: error.name || 'Error',
+      componentStack: errorInfo.componentStack ? 'available' : 'missing',
+    })
     this.props.onError?.(error, errorInfo)
   }
 

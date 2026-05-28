@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Inventory } from '../Resources/Inventory'
 import { SHIP_UPGRADES, UpgradeModal, type ShipUpgradeOption } from '../Ship/UpgradeModal'
+import { trackEvent } from '../../services/analytics'
 import { useResourceStore, useShipStore, type ResourceInventory, type ResourceType, type Ship } from '../../store'
 
 const DEMO_SHIPS: Ship[] = [
@@ -89,8 +90,16 @@ function ShipCard({
 
 function ShipDashboard() {
   const { ships, activeShipId, setShips, setActiveShip, upsertShip } = useShipStore()
-  const { inventory, setInventory, adjustResource } = useResourceStore()
+  const {
+    inventory,
+    optimisticTransactions,
+    setInventory,
+    applyOptimisticUpdate,
+    confirmOptimisticUpdate,
+    rollbackOptimisticUpdate,
+  } = useResourceStore()
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
+  const [upgradeMessage, setUpgradeMessage] = useState<string | null>(null)
   const seededShips = useRef(false)
   const seededInventory = useRef(false)
 
@@ -141,13 +150,27 @@ function ShipDashboard() {
     [inventory]
   )
 
-  const handleApplyUpgrade = (upgrade: ShipUpgradeOption) => {
+  const pendingUpgrade = optimisticTransactions.find(
+    (transaction) => transaction.status === 'pending' && transaction.label.startsWith('Upgrade:')
+  )
+  const latestUpgradeResult = optimisticTransactions.find(
+    (transaction) => transaction.label.startsWith('Upgrade:') && transaction.status !== 'pending'
+  )
+
+  const handleApplyUpgrade = async (upgrade: ShipUpgradeOption) => {
     if (!activeShip || !hasResources(inventory, upgrade.cost)) return
 
-    for (const [resource, amount] of Object.entries(upgrade.cost)) {
-      if (!amount) continue
-      adjustResource(resource as ResourceType, -amount)
-    }
+    const previousShip = activeShip
+    const changes = Object.fromEntries(
+      Object.entries(upgrade.cost).map(([resource, amount]) => [resource, -(amount ?? 0)])
+    ) as Partial<Record<ResourceType, number>>
+    const transactionId = applyOptimisticUpdate(`Upgrade: ${upgrade.name}`, changes)
+    trackEvent('upgrade_started', {
+      upgradeId: upgrade.id,
+      shipModel: activeShip.model,
+      creditsCost: upgrade.cost.credits ?? 0,
+      mineralsCost: upgrade.cost.minerals ?? 0,
+    })
 
     upsertShip({
       ...activeShip,
@@ -157,7 +180,27 @@ function ShipDashboard() {
       lastKnownSector: upgrade.sectorLabel ?? activeShip.lastKnownSector,
     })
 
-    setIsUpgradeOpen(false)
+    setUpgradeMessage(`${upgrade.name} is pending transaction confirmation.`)
+
+    try {
+      await new Promise((resolve) => window.setTimeout(resolve, 700))
+      confirmOptimisticUpdate(transactionId)
+      trackEvent('upgrade_confirmed', {
+        upgradeId: upgrade.id,
+        cargoDelta: upgrade.cargoDelta ?? 0,
+        crewDelta: upgrade.crewDelta ?? 0,
+      })
+      setUpgradeMessage(`${upgrade.name} confirmed successfully.`)
+      setIsUpgradeOpen(false)
+    } catch (error) {
+      rollbackOptimisticUpdate(transactionId, error instanceof Error ? error.message : 'Upgrade failed')
+      trackEvent('upgrade_failed', {
+        upgradeId: upgrade.id,
+        reason: error instanceof Error ? error.name || 'Error' : 'unknown',
+      })
+      upsertShip(previousShip)
+      setUpgradeMessage(`${upgrade.name} failed and resource changes were rolled back.`)
+    }
   }
 
   return (
@@ -173,12 +216,35 @@ function ShipDashboard() {
         </div>
 
         <div className="dashboard-actions">
-          <button type="button" className="primary-button" onClick={() => setIsUpgradeOpen(true)}>
-            Open upgrade bay
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => setIsUpgradeOpen(true)}
+            disabled={Boolean(pendingUpgrade)}
+          >
+            {pendingUpgrade ? 'Upgrade pending' : 'Open upgrade bay'}
           </button>
           <span className="dashboard-hint">{availableUpgrades} upgrades currently affordable</span>
         </div>
       </div>
+
+      {(upgradeMessage || latestUpgradeResult) && (
+        <div
+          className={`transaction-banner ${
+            pendingUpgrade
+              ? 'transaction-banner-pending'
+              : latestUpgradeResult?.status === 'failed'
+                ? 'transaction-banner-error'
+                : 'transaction-banner-success'
+          }`}
+          role={latestUpgradeResult?.status === 'failed' ? 'alert' : 'status'}
+        >
+          {upgradeMessage ??
+            (latestUpgradeResult?.status === 'failed'
+              ? latestUpgradeResult.error ?? 'Transaction failed and was rolled back.'
+              : 'Transaction confirmed successfully.')}
+        </div>
+      )}
 
       <div className="metric-grid">
         <article className="metric-card">
@@ -239,7 +305,13 @@ function ShipDashboard() {
                     <strong>{upgrade.name}</strong>
                     <p>{upgrade.description}</p>
                   </div>
-                  <span>{hasResources(inventory, upgrade.cost) ? 'Ready' : 'Locked'}</span>
+                  <span>
+                    {pendingUpgrade?.label === `Upgrade: ${upgrade.name}`
+                      ? 'Pending'
+                      : hasResources(inventory, upgrade.cost)
+                        ? 'Ready'
+                        : 'Locked'}
+                  </span>
                 </div>
               ))}
             </div>
@@ -251,6 +323,7 @@ function ShipDashboard() {
         isOpen={isUpgradeOpen}
         ship={activeShip}
         inventory={inventory}
+        isPending={Boolean(pendingUpgrade)}
         onClose={() => setIsUpgradeOpen(false)}
         onConfirm={handleApplyUpgrade}
       />

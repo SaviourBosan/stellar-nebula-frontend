@@ -1,5 +1,6 @@
 import { useSettingsStore } from '@/store/settingsStore'
 import type { GraphicsQuality, StellarNetwork } from '@/store/settingsStore'
+import { analytics } from '@/services/analytics'
 
 interface ToggleProps {
   id: string
@@ -77,12 +78,19 @@ function SettingsPanel({ onClose }: SettingsPanelProps) {
     graphicsQuality,
     soundEnabled,
     notificationsEnabled,
+    analyticsEnabled,
     network,
     setGraphicsQuality,
     setSoundEnabled,
     setNotificationsEnabled,
+    setAnalyticsEnabled,
     setNetwork,
   } = useSettingsStore()
+
+  const handleAnalyticsEnabled = (enabled: boolean) => {
+    setAnalyticsEnabled(enabled)
+    analytics.setOptOut(!enabled)
+  }
 
   return (
     <div className="settings-panel" role="dialog" aria-label="Settings" aria-modal="true">
@@ -130,6 +138,18 @@ function SettingsPanel({ onClose }: SettingsPanelProps) {
             checked={notificationsEnabled}
             onChange={setNotificationsEnabled}
             label="In-game notifications"
+          />
+        </section>
+
+        <section className="settings-section" aria-labelledby="privacy-heading">
+          <h3 id="privacy-heading" className="settings-section-title">
+            Privacy
+          </h3>
+          <Toggle
+            id="analytics-toggle"
+            checked={analyticsEnabled}
+            onChange={handleAnalyticsEnabled}
+            label="Privacy analytics"
           />
         </section>
 
