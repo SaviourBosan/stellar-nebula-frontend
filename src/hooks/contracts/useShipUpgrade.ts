@@ -3,7 +3,10 @@ import { TransactionBuilder, rpc } from '@stellar/stellar-sdk'
 import { useWallet } from '../../contexts/WalletContext'
 import { env } from '../../config/env'
 import type { StellarNetworkConfig } from '../../config/stellar'
-import { fetchResourceAssetSnapshot, type ResourceAssetSnapshot } from '../../services/assets/resources'
+import {
+  fetchResourceAssetSnapshot,
+  type ResourceAssetSnapshot,
+} from '../../services/assets/resources'
 import {
   buildShipUpgradeTransaction,
   calculateUpgradeRequirements,
@@ -163,19 +166,31 @@ export function useShipUpgrade(
         signedXdr,
         config?.networkPassphrase ?? env.STELLAR_PASSPHRASE
       )
-      const sendResult = await retryAsync(
-        async () => rpcServer.sendTransaction(transaction),
-        {
-          retries: 2,
-          shouldRetry: (error) => isRetryableStellarError(error),
-        }
-      )
+      const sendResult = await retryAsync(async () => rpcServer.sendTransaction(transaction), {
+        retries: 2,
+        shouldRetry: (error) => isRetryableStellarError(error),
+      })
 
-      if (sendResult.status !== 'PENDING') {
-        throw new Error(`Upgrade submission failed: ${sendResult.status}`)
+      const sendStatus =
+        typeof (sendResult as { status?: unknown }).status === 'string'
+          ? (sendResult as { status: string }).status
+          : 'UNKNOWN'
+
+      if (sendStatus === 'FAILED' || sendStatus === 'ERROR') {
+        throw new Error(`Upgrade submission failed: ${sendStatus}`)
       }
 
-      const finalResult = await rpcServer.pollTransaction(sendResult.hash)
+      if (sendStatus === 'SUCCESS') {
+        return typeof (sendResult as { hash?: unknown }).hash === 'string'
+          ? (sendResult as { hash: string }).hash
+          : null
+      }
+
+      if (sendStatus !== 'PENDING') {
+        throw new Error(`Upgrade submission failed: ${sendStatus}`)
+      }
+
+      const finalResult = await rpcServer.pollTransaction((sendResult as { hash: string }).hash)
 
       if (finalResult.status === 'FAILED') {
         throw new Error('The upgrade transaction failed on-chain.')
@@ -195,7 +210,14 @@ export function useShipUpgrade(
       setError(err instanceof Error ? err.message : 'Failed to submit upgrade transaction')
       return null
     }
-  }, [buildUpgradeTransaction, config, shipNFT, signTransaction, walletState.isConnected, walletState.publicKey])
+  }, [
+    buildUpgradeTransaction,
+    config,
+    shipNFT,
+    signTransaction,
+    walletState.isConnected,
+    walletState.publicKey,
+  ])
 
   return {
     shipNFT,
