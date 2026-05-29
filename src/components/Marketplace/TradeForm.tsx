@@ -1,26 +1,31 @@
-import React, { useState } from 'react';
-import { Asset } from './types';
+import React, { useState } from 'react'
+import type { Asset } from './types'
 
 interface TradeFormProps {
-  baseAsset: Asset;
-  quoteAsset: Asset;
-  currentPrice: number;
-  onSubmit: (type: 'buy' | 'sell', price: number, amount: number) => void;
+  baseAsset: Asset
+  quoteAsset: Asset
+  currentPrice: number
+  onSubmit: (type: 'buy' | 'sell', price: number, amount: number) => void
 }
 
-export const TradeForm: React.FC<TradeFormProps> = ({ baseAsset, quoteAsset, currentPrice, onSubmit }) => {
-  const [type, setType] = useState<'buy' | 'sell'>('buy');
-  const [price, setPrice] = useState<string>(currentPrice.toString());
-  const [amount, setAmount] = useState<string>('');
+export const TradeForm: React.FC<TradeFormProps> = ({
+  baseAsset,
+  quoteAsset,
+  currentPrice,
+  onSubmit,
+}) => {
+  const [type, setType] = useState<'buy' | 'sell'>('buy')
+  const [price, setPrice] = useState<string>(currentPrice.toString())
+  const [amount, setAmount] = useState<string>('')
 
-  const total = (parseFloat(price || '0') * parseFloat(amount || '0')).toFixed(4);
+  const total = (parseFloat(price || '0') * parseFloat(amount || '0')).toFixed(4)
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!price || !amount) return;
-    onSubmit(type, parseFloat(price), parseFloat(amount));
-    setAmount('');
-  };
+    e.preventDefault()
+    if (!price || !amount) return
+    onSubmit(type, parseFloat(price), parseFloat(amount))
+    setAmount('')
+  }
 
   return (
     <div className="bg-space-900 border border-space-800 rounded-xl p-4">
@@ -67,8 +72,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({ baseAsset, quoteAsset, cur
               className="w-full bg-space-950 border border-space-700 rounded p-2 text-white focus:border-cosmic-cyan outline-none"
               required
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="absolute right-2 text-xs text-cosmic-cyan hover:text-white"
               onClick={() => setAmount('100')} // Mock max amount
             >
@@ -80,9 +85,11 @@ export const TradeForm: React.FC<TradeFormProps> = ({ baseAsset, quoteAsset, cur
         <div className="pt-2 border-t border-space-800">
           <div className="flex justify-between text-sm mb-4">
             <span className="text-space-100">Total</span>
-            <span className="text-white font-mono">{total} {quoteAsset.code}</span>
+            <span className="text-white font-mono">
+              {total} {quoteAsset.code}
+            </span>
           </div>
-          
+
           <button
             type="submit"
             className={`w-full py-3 rounded font-bold text-white transition-colors ${type === 'buy' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
@@ -92,5 +99,5 @@ export const TradeForm: React.FC<TradeFormProps> = ({ baseAsset, quoteAsset, cur
         </div>
       </form>
     </div>
-  );
-};
+  )
+}
