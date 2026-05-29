@@ -24,6 +24,7 @@ function AppLayout() {
       <main className="app-main">
         <Outlet />
       </main>
+      <Footer />
     </div>
   )
 }
