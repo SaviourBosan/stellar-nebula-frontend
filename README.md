@@ -73,8 +73,13 @@ textnpm run build # Outputs to /dist
 Testing
 
 Unit: npm test (Vitest + React Testing Library).
+Performance: npm run performance:test (FPS and memory regression coverage), npm run performance:ci (Lighthouse CI with budget enforcement).
 E2E: Add Cypress later; current coverage: Components (80%+).
 Lint: npm run lint (ESLint + Prettier).
+
+Performance Testing
+
+See [docs/performance-testing.md](docs/performance-testing.md) for thresholds, local commands, and Lighthouse report interpretation.
 
 Deployment
 
