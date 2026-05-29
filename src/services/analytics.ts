@@ -59,7 +59,9 @@ function writeOptOut(value: boolean): void {
   }
 }
 
-export function sanitizeAnalyticsPayload(payload: AnalyticsEventPayload = {}): AnalyticsEventPayload {
+export function sanitizeAnalyticsPayload(
+  payload: AnalyticsEventPayload = {}
+): AnalyticsEventPayload {
   return Object.fromEntries(
     Object.entries(payload).filter(([key, value]) => {
       if (piiKeyPattern.test(key)) return false
