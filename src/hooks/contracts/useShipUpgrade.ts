@@ -186,11 +186,26 @@ export function useShipUpgrade(
         shouldRetry: (error) => isRetryableStellarError(error),
       })
 
-      if (sendResult.status !== 'PENDING') {
-        throw new Error(`Upgrade submission failed: ${sendResult.status}`)
+      const sendStatus =
+        typeof (sendResult as { status?: unknown }).status === 'string'
+          ? (sendResult as { status: string }).status
+          : 'UNKNOWN'
+
+      if (sendStatus === 'FAILED' || sendStatus === 'ERROR') {
+        throw new Error(`Upgrade submission failed: ${sendStatus}`)
       }
 
-      const finalResult = await rpcServer.pollTransaction(sendResult.hash)
+      if (sendStatus === 'SUCCESS') {
+        return typeof (sendResult as { hash?: unknown }).hash === 'string'
+          ? (sendResult as { hash: string }).hash
+          : null
+      }
+
+      if (sendStatus !== 'PENDING') {
+        throw new Error(`Upgrade submission failed: ${sendStatus}`)
+      }
+
+      const finalResult = await rpcServer.pollTransaction((sendResult as { hash: string }).hash)
 
       if (finalResult.status === 'FAILED') {
         throw new Error('The upgrade transaction failed on-chain.')

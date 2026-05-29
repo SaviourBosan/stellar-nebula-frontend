@@ -91,6 +91,11 @@ export function useSignTransaction(): UseSignTransactionReturn {
         return null
       }
 
+      if (isLoading) {
+        setError('Transaction submission already in progress.')
+        return null
+      }
+
       setIsLoading(true)
       setError(null)
       setResult(null)
@@ -165,7 +170,9 @@ export function useSignTransaction(): UseSignTransactionReturn {
           ) {
             submissionResult.txHash = (finalResult as { txHash: string }).txHash
           }
-        } else if (sendStatus !== 'SUCCESS') {
+        } else if (sendStatus === 'SUCCESS') {
+          submissionResult.txHash = hash
+        } else {
           throw new Error(`Unexpected transaction submission status: ${sendStatus}`)
         }
 

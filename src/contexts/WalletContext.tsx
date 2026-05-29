@@ -85,25 +85,37 @@ function clearPersistedWallet(): void {
  * Validates if a persisted wallet session is still active.
  * Checks if the wallet extension is still installed and can provide the public key.
  */
-async function validateWalletSession(persisted: PersistedWallet): Promise<boolean> {
+async function validateWalletSession(persisted: PersistedWallet): Promise<WalletState | null> {
   try {
     if (persisted.walletType === 'freighter') {
       const installed = await isFreighterInstalled()
-      if (!installed) return false
+      if (!installed) return null
 
-      // Attempt to get the public key to ensure the wallet is still connected
+      // Attempt to get the public key and network to ensure the wallet is still connected.
+      // If the wallet has been switched or disconnected, do not reuse the persisted session.
       const currentKey = await connectFreighter()
-      // Verify the key matches what we stored
-      return currentKey === persisted.publicKey
+      if (currentKey !== persisted.publicKey) return null
+
+      const network = await getFreighterNetwork()
+      return {
+        isConnected: true,
+        publicKey: currentKey,
+        walletType: persisted.walletType,
+        network,
+      }
     } else if (persisted.walletType === 'albedo') {
-      if (!isAlbedoAvailable()) return false
-      // For Albedo, just check availability (web-based, no key validation needed)
-      return true
+      if (!isAlbedoAvailable()) return null
+      return {
+        isConnected: true,
+        publicKey: persisted.publicKey,
+        walletType: persisted.walletType,
+        network: persisted.network,
+      }
     }
-    return false
+    return null
   } catch {
-    // Session expired or wallet disconnected
-    return false
+    // Session expired, wallet disconnected, or the wallet rejected the validation request.
+    return null
   }
 }
 
@@ -147,22 +159,20 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
       try {
         // Validate that the persisted session is still active
-        const isValid = await validateWalletSession(persisted)
-        if (!isValid) {
-          // Session expired or wallet disconnected
-          log.warn('Wallet session expired', { walletType: persisted.walletType })
+        const restored = await validateWalletSession(persisted)
+        if (!restored) {
           setReconnectError('Previous wallet session expired. Please reconnect.')
           clearPersistedWallet()
           setIsReconnecting(false)
           return
         }
 
-        // Session is valid, restore the wallet state
-        setWalletState({
-          isConnected: true,
-          publicKey: persisted.publicKey,
-          walletType: persisted.walletType,
-          network: persisted.network,
+        // Session is valid, restore the wallet state and keep storage in sync.
+        setWalletState(restored)
+        persistWallet({
+          publicKey: restored.publicKey ?? persisted.publicKey,
+          walletType: restored.walletType,
+          network: restored.network ?? persisted.network,
         })
         
         log.info('Wallet auto-reconnect successful', { 
