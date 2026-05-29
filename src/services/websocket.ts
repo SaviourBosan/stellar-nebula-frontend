@@ -8,6 +8,16 @@ export interface WebSocketManagerOptions {
   heartbeatIntervalMs?: number
 }
 
+/**
+ * Manages a WebSocket connection with automatic reconnection, heartbeats,
+ * and pub/sub message routing.
+ *
+ * @example
+ * const ws = new WebSocketManager('wss://api.example.com/ws')
+ * ws.connect()
+ * const unsub = ws.subscribe('scan_result', (data) => console.log(data))
+ * ws.subscribeToAccount('G...')
+ */
 export class WebSocketManager {
   private url: string
   private ws: WebSocket | null = null
@@ -26,6 +36,7 @@ export class WebSocketManager {
     this.heartbeatIntervalMs = opts.heartbeatIntervalMs ?? 30000
   }
 
+  /** Open the WebSocket connection. */
   connect() {
     if (this.ws && (this.status === 'connecting' || this.status === 'open')) return
     this.status = 'connecting'
@@ -47,7 +58,6 @@ export class WebSocketManager {
 
     this.ws.addEventListener('error', (err) => {
       this.status = 'error'
-      // keep socket around so close handler can run and schedule reconnect
       console.error('WebSocket error', err)
     })
   }
@@ -86,7 +96,6 @@ export class WebSocketManager {
       /* ignore */
     }
     const type = data?.type ?? 'message'
-    // publish to subscribers for the exact type and wildcard '*'
     this.publish(type, data)
     this.publish('*', data)
   }
@@ -103,12 +112,17 @@ export class WebSocketManager {
     }
   }
 
+  /**
+   * Subscribe to messages of a specific event type.
+   * Returns an unsubscribe function.
+   */
   subscribe(event: string, handler: Handler) {
     if (!this.subscriptions.has(event)) this.subscriptions.set(event, new Set())
     this.subscriptions.get(event)!.add(handler)
     return () => this.unsubscribe(event, handler)
   }
 
+  /** Remove a previously subscribed handler. */
   unsubscribe(event: string, handler: Handler) {
     const set = this.subscriptions.get(event)
     if (!set) return
@@ -116,14 +130,17 @@ export class WebSocketManager {
     if (set.size === 0) this.subscriptions.delete(event)
   }
 
+  /** Subscribe to account-specific updates from the server. */
   subscribeToAccount(accountId: string) {
     this.send({ action: 'subscribe', topic: 'account', account: accountId })
   }
 
+  /** Subscribe to contract-specific events from the server. */
   subscribeToContract(contractId: string) {
     this.send({ action: 'subscribe', topic: 'contract', contract: contractId })
   }
 
+  /** Send a raw or JSON-serializable message over the socket. */
   send(obj: any) {
     if (!this.ws || this.status !== 'open') return
     try {
@@ -133,6 +150,7 @@ export class WebSocketManager {
     }
   }
 
+  /** Close the connection permanently (no reconnect). */
   close() {
     this.shouldReconnect = false
     this.stopHeartbeat()
@@ -145,6 +163,7 @@ export class WebSocketManager {
     }
   }
 
+  /** Get the current connection status. */
   getStatus() {
     return this.status
   }

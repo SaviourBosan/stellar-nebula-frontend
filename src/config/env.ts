@@ -3,26 +3,21 @@ import type { StellarNetwork } from './stellar'
 export type Environment = 'development' | 'staging' | 'production'
 
 export interface EnvConfig {
-  // App
   NODE_ENV: Environment
   APP_NAME: string
   APP_VERSION: string
 
-  // Stellar Network
   STELLAR_NETWORK: StellarNetwork
   STELLAR_RPC_URL: string
   STELLAR_HORIZON_URL: string
   STELLAR_PASSPHRASE: string
 
-  // Contract IDs
   NEBULA_CONTRACT_ID: string
   TOKEN_CONTRACT_ID: string
 
-  // API
   API_BASE_URL: string
   API_TIMEOUT_MS: number
 
-  // Feature flags
   ENABLE_DEV_TOOLS: boolean
   ENABLE_FPS_COUNTER: boolean
 }
@@ -36,6 +31,10 @@ const REQUIRED_VARS = [
   'VITE_API_BASE_URL',
 ] as const
 
+/**
+ * Validate that required environment variables are present.
+ * Throws if any are missing.
+ */
 function validateEnv(): void {
   const missing = REQUIRED_VARS.filter((key) => !import.meta.env[key])
 
@@ -46,6 +45,10 @@ function validateEnv(): void {
   }
 }
 
+/**
+ * Read and validate all environment variables.
+ * Returns a typed EnvConfig object.
+ */
 function getEnv(): EnvConfig {
   validateEnv()
 
