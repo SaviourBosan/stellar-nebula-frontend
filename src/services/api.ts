@@ -24,6 +24,10 @@ type ResponseInterceptor = (response: Response) => Response | Promise<Response>
 const requestInterceptors: RequestInterceptor[] = []
 const responseInterceptors: ResponseInterceptor[] = []
 
+/**
+ * Register a request interceptor that runs before every outgoing API call.
+ * Returns a cleanup function to remove the interceptor.
+ */
 export function addRequestInterceptor(interceptor: RequestInterceptor): () => void {
   requestInterceptors.push(interceptor)
   return () => {
@@ -34,6 +38,10 @@ export function addRequestInterceptor(interceptor: RequestInterceptor): () => vo
   }
 }
 
+/**
+ * Register a response interceptor that runs on every incoming API response.
+ * Returns a cleanup function to remove the interceptor.
+ */
 export function addResponseInterceptor(interceptor: ResponseInterceptor): () => void {
   responseInterceptors.push(interceptor)
   return () => {
@@ -77,6 +85,13 @@ async function executeFetch(
   throw lastError ?? new Error('Request failed after retries')
 }
 
+/**
+ * Base request handler with retry logic, timeout, and interceptor support.
+ *
+ * @param path   - API endpoint path (e.g. "/users")
+ * @param options- Fetch options (method, headers, body)
+ * @param retries- Number of retry attempts on failure (default 2)
+ */
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -144,10 +159,22 @@ async function request<T>(
   }
 }
 
+/**
+ * Perform an HTTP GET request.
+ *
+ * @example
+ * const { data, error } = await get<User[]>('/users')
+ */
 export function get<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
   return request<T>(path, { ...options, method: 'GET' })
 }
 
+/**
+ * Perform an HTTP POST request with a JSON body.
+ *
+ * @example
+ * const { data } = await post<User>('/users', { name: 'Alice' })
+ */
 export function post<T>(
   path: string,
   body?: unknown,
@@ -161,6 +188,12 @@ export function post<T>(
   })
 }
 
+/**
+ * Perform an HTTP PUT request with a JSON body.
+ *
+ * @example
+ * const { data } = await put<User>('/users/1', { name: 'Bob' })
+ */
 export function put<T>(
   path: string,
   body?: unknown,
@@ -174,6 +207,12 @@ export function put<T>(
   })
 }
 
+/**
+ * Perform an HTTP DELETE request.
+ *
+ * @example
+ * const { error } = await del('/users/1')
+ */
 export function del<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
   return request<T>(path, { ...options, method: 'DELETE' })
 }

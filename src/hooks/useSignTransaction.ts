@@ -102,8 +102,7 @@ export function useSignTransaction(): UseSignTransactionReturn {
 
       try {
         const buildOutput = await buildTransaction()
-        const unsignedXdr =
-          typeof buildOutput === 'string' ? buildOutput : buildOutput.toXDR()
+        const unsignedXdr = typeof buildOutput === 'string' ? buildOutput : buildOutput.toXDR()
 
         const signedXdr = await signTransaction(unsignedXdr)
         if (!signedXdr) {
@@ -126,7 +125,10 @@ export function useSignTransaction(): UseSignTransactionReturn {
           throw new Error(formatSendError(sendResult))
         }
 
-        if (!(sendResult as { hash?: unknown }).hash || typeof (sendResult as { hash?: unknown }).hash !== 'string') {
+        if (
+          !(sendResult as { hash?: unknown }).hash ||
+          typeof (sendResult as { hash?: unknown }).hash !== 'string'
+        ) {
           throw new Error('Transaction submission did not return a transaction hash.')
         }
 
@@ -157,7 +159,10 @@ export function useSignTransaction(): UseSignTransactionReturn {
             throw new Error('Network error while polling transaction status.')
           }
 
-          if (pollStatus === 'SUCCESS' && typeof (finalResult as { txHash?: unknown }).txHash === 'string') {
+          if (
+            pollStatus === 'SUCCESS' &&
+            typeof (finalResult as { txHash?: unknown }).txHash === 'string'
+          ) {
             submissionResult.txHash = (finalResult as { txHash: string }).txHash
           }
         } else if (sendStatus !== 'SUCCESS') {

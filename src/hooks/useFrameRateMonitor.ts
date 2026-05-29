@@ -8,6 +8,17 @@ interface UseFrameRateMonitorOptions {
   onSample?: (sample: FpsBenchmarkSample) => void
 }
 
+/**
+ * Hook that monitors the browser's frame rate via requestAnimationFrame.
+ *
+ * @param options.enabled       - Whether monitoring is active (default true)
+ * @param options.targetFps     - Target FPS for the isWithinTarget flag (default 60)
+ * @param options.sampleWindowMs- Window over which to compute FPS (default 1000)
+ * @param options.onSample      - Callback invoked on each completed sample
+ *
+ * @example
+ * const { fps, averageFps, isWithinTarget } = useFrameRateMonitor()
+ */
 export function useFrameRateMonitor({
   enabled = true,
   targetFps = 60,
