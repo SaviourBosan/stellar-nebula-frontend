@@ -44,6 +44,43 @@ This frontend demonstrates Stellar's low-latency for real time gaming, targeting
    npm run dev
    textOpen [http://localhost:5173](http://localhost:5173) – connect wallet and scan a nebula!
 
+## Docker
+
+You can also run the project using Docker for a consistent development environment:
+
+### Development
+
+```bash
+npm run docker:dev
+```
+
+This will start the development server with hot reloading at `http://localhost:5173`.
+
+### Production Build
+
+```bash
+npm run docker:build
+npm run docker:prod
+```
+
+This will build and serve the production version at `http://localhost:8080`.
+
+## Storybook
+
+We use Storybook to document and develop our UI components in isolation.
+
+To start Storybook:
+
+```bash
+npm run storybook
+```
+
+To build Storybook for deployment:
+
+```bash
+npm run build-storybook
+```
+
 ### Local Testing with Backend
 
 - Deploy backend contracts to Futurenet (see [backend README](https://github.com/Space-Nebula/stellar-nebula-nomad)).

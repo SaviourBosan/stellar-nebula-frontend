@@ -15,11 +15,19 @@ async function deriveAesKeyFromPassphrase(passphrase: string) {
 }
 
 export interface StorageOptions {
-  encryptionKey?: string // passphrase (optional)
+  encryptionKey?: string
   version?: number
   validate?: (v: any) => boolean
 }
 
+/**
+ * Persistent localStorage manager with optional AES-GCM encryption.
+ *
+ * @example
+ * const storage = new StorageManager('app:', { encryptionKey: 'my-passphrase' })
+ * await storage.set('user', { name: 'Alice' })
+ * const user = await storage.get('user')
+ */
 export class StorageManager {
   private prefix: string
   private opts: StorageOptions
@@ -37,6 +45,7 @@ export class StorageManager {
     return `${this.prefix}${k}`
   }
 
+  /** Persist a value to localStorage (optionally encrypted). */
   async set<T>(k: string, value: T) {
     const payload = { v: value, __v: this.opts.version ?? 1 }
     let data = JSON.stringify(payload)
@@ -52,6 +61,7 @@ export class StorageManager {
     localStorage.setItem(this.key(k), data)
   }
 
+  /** Read a previously stored value, or null if missing. */
   async get<T>(k: string): Promise<T | null> {
     const raw = localStorage.getItem(this.key(k))
     if (!raw) return null
@@ -68,13 +78,11 @@ export class StorageManager {
         if (this.opts.validate && !this.opts.validate(payload.v)) return null
         return payload.v as T
       }
-      // unencrypted
       const payload = JSON.parse(raw)
       if (payload && payload.v !== undefined) {
         if (this.opts.validate && !this.opts.validate(payload.v)) return null
         return payload.v as T
       }
-      // legacy raw value
       return payload as T
     } catch (e) {
       console.error('Storage get error', e)
@@ -82,10 +90,15 @@ export class StorageManager {
     }
   }
 
+  /** Remove a key from localStorage. */
   remove(k: string) {
     localStorage.removeItem(this.key(k))
   }
 
+  /**
+   * Migrate an existing stored value through a transform function.
+   * Useful for schema migrations.
+   */
   async migrate<T>(k: string, transform: (oldValue: any) => T) {
     const raw = localStorage.getItem(this.key(k))
     if (!raw) return

@@ -7,6 +7,20 @@ export interface SyncOptions<T = any> {
   onSync?: (merged: T) => void
 }
 
+/**
+ * Generic offline/online data synchroniser.
+ *
+ * Periodically fetches remote data, merges it with local state,
+ * and persists the result. Supports custom conflict resolution.
+ *
+ * @example
+ * const sync = new DataSync({
+ *   fetcher: () => api.get('/data'),
+ *   getLocal: () => storage.get('data'),
+ *   setLocal: (v) => storage.set('data', v),
+ * })
+ * sync.start()
+ */
 export class DataSync<T = any> {
   private opts: SyncOptions<T>
   private intervalId: number | null = null
@@ -16,11 +30,13 @@ export class DataSync<T = any> {
     this.opts = { intervalMs: 30000, ...opts }
   }
 
+  /** Start the periodic sync loop. */
   start() {
     if (this.intervalId) return
     this.intervalId = window.setInterval(() => void this.sync(), this.opts.intervalMs)
   }
 
+  /** Stop the periodic sync loop. */
   stop() {
     if (this.intervalId) {
       clearInterval(this.intervalId)
@@ -28,6 +44,7 @@ export class DataSync<T = any> {
     }
   }
 
+  /** Trigger a manual sync outside the normal interval. */
   async manualSync() {
     return this.sync()
   }
@@ -59,6 +76,7 @@ export class DataSync<T = any> {
     }
   }
 
+  /** Get the current sync status. */
   getStatus() {
     return { isSyncing: this.isSyncing, running: !!this.intervalId }
   }
