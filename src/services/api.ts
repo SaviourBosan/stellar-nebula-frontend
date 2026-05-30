@@ -1,4 +1,8 @@
 import { env } from '../config'
+import { createScopedLogger } from './logging'
+import { addMonitoringBreadcrumb } from './monitoring'
+
+const log = createScopedLogger('API')
 
 export interface ApiResponse<T> {
   data: T | null
@@ -98,6 +102,10 @@ async function request<T>(
   retries = 2
 ): Promise<ApiResponse<T>> {
   let config: ApiRequestConfig = { ...options, url: path, retries }
+  const method = options.method || 'GET'
+  const startTime = performance.now()
+
+  log.debug(`${method} ${path}`)
 
   for (const interceptor of requestInterceptors) {
     const result = interceptor(config)
@@ -122,7 +130,14 @@ async function request<T>(
       data = (await response.json()) as T
     }
 
+    const duration = Math.round(performance.now() - startTime)
+
     if (!response.ok) {
+      log.warn(`${method} ${path} ${response.status}`, { duration })
+      addMonitoringBreadcrumb(`API Error: ${method} ${path}`, 'api-error', {
+        status: response.status,
+        duration,
+      })
       return {
         data: null,
         error: {
@@ -136,19 +151,41 @@ async function request<T>(
       }
     }
 
+    log.debug(`${method} ${path} ${response.status}`, { duration })
+    addMonitoringBreadcrumb(`API Success: ${method} ${path}`, 'api-success', {
+      status: response.status,
+      duration,
+    })
+
     return { data, error: null, status: response.status }
   } catch (error) {
+    const duration = Math.round(performance.now() - startTime)
     if (error instanceof DOMException && error.name === 'AbortError') {
+      log.warn(`${method} ${path} timeout`, { duration, timeout: env.API_TIMEOUT_MS })
+      addMonitoringBreadcrumb(`API Timeout: ${method} ${path}`, 'api-error', {
+        duration,
+        timeout: env.API_TIMEOUT_MS,
+      })
       return {
         data: null,
         error: { message: 'Request timed out', status: 408, code: 'TIMEOUT' },
         status: 408,
       }
     }
+
+    const errorMessage = error instanceof Error ? error.message : 'Network error'
+    log.error(`${method} ${path} network error`, error instanceof Error ? error : new Error(errorMessage), {
+      duration,
+    })
+    addMonitoringBreadcrumb(`API Network Error: ${method} ${path}`, 'api-error', {
+      duration,
+      error: errorMessage,
+    })
+
     return {
       data: null,
       error: {
-        message: error instanceof Error ? error.message : 'Network error',
+        message: errorMessage,
         status: 0,
         code: 'NETWORK_ERROR',
       },
